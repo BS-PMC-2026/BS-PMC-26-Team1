@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI/CD Learning Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div class="nav-brand">DevOpsEd</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/intro">Intro</a>
+            <a href="/pipeline">Pipeline</a>
+            <a href="/exercise">Exercise</a>
+            {% if session.get('user_id') %}
+                <a href="/progress" style="color:var(--text-primary); border-bottom: 2px solid var(--accent-color);">Dashboard</a>
+                <span style="color:var(--text-secondary); margin-left:1rem;">Hello, {{ session.get('user_name') }}</span>
+                <a href="/logout" style="margin-left:1rem; color:#f87171;">Logout</a>
+            {% else %}
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div style="margin-bottom: 1.5rem;">
+            {% for category, message in messages %}
+              {% if category == 'error' %}
+              <div style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; background-color: #7f1d1d; color: #fff;">
+              {% else %}
+              <div style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; background-color: #14532d; color: #fff;">
+              {% endif %}
+                  {{ message }}
+              </div>
+            {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>
