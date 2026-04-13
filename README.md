@@ -1,47 +1,22 @@
-# Folder 2 — yosi
+# CI/CD Learning Platform
 
-## Jira Tasks
-- **Homepage** — clear and welcoming landing page so students understand the platform
-- **User Initialization / Basic Identification** — register and login so progress can be tracked
-- **Git Repository Setup** — shared Git repository for team collaboration
+## Project Name
+Interactive Software Development Learning Platform in a Continuous Environment
 
-## Files in this folder
+## Project Goal
+Develop an interactive educational platform that helps software engineering students learn and practice real CI/CD and DevOps workflows.
 
-| File | Description |
-|------|-------------|
-| `app/templates/home.html` | Homepage / landing page |
-| `app/templates/login.html` | Login page |
-| `app/templates/register.html` | Registration page |
-| `app/routes/main.py` | Route for homepage and start button |
-| `app/routes/auth.py` | Routes for login, register, logout |
-| `app/models.py` | All database models (User, StudentProfile, etc.) |
-| `requirements.txt` | Python dependencies |
-| `.gitignore` | Files to exclude from Git |
+## Main Topics
+- Git
+- Docker
+- Kubernetes
+- Azure DevOps
+- Pipelines
+- Testing
+- Progress Tracking
 
-## Where to place these files in the main project
-
-```
-ANTE/
-├── app/
-│   ├── templates/
-│   │   ├── home.html        ← your file
-│   │   ├── login.html       ← your file
-│   │   └── register.html    ← your file
-│   ├── routes/
-│   │   ├── main.py          ← your file
-│   │   └── auth.py          ← your file
-│   └── models.py            ← your file
-├── requirements.txt         ← your file
-└── .gitignore               ← your file
-```
-
-## How to run the full project
-
-```bash
-git clone <main-repo-url>
-cd ANTE
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-python app.py
-```
+## Team Members
+- Member 1
+- Member 2
+- Member 3
+- Member 4
