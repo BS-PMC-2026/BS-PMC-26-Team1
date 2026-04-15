@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Login to continue your learning journey</p>
+</div>
+
+<div class="card" style="max-width: 400px; margin: 0 auto;">
+    <form action="/login" method="POST" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div>
+            <label style="display:block; margin-bottom: 0.5rem;">Email</label>
+            <input type="email" name="email" required style="width: 100%; padding: 0.75rem; border-radius: 4px; border: 1px solid #334155; background: #0f172a; color: white;">
+        </div>
+        <div>
+            <label style="display:block; margin-bottom: 0.5rem;">Password</label>
+            <input type="password" name="password" required style="width: 100%; padding: 0.75rem; border-radius: 4px; border: 1px solid #334155; background: #0f172a; color: white;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 1rem; width: 100%;">Login</button>
+    </form>
+    <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem;">
+        Don't have an account? <a href="/register" style="color: var(--accent-color);">Register here</a>
+    </p>
+</div>
+{% endblock %}
