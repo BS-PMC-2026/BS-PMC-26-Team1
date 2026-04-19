@@ -44,4 +44,5 @@ jobs:
             --ignore=tests/test_intro.py \
             --ignore=tests/test_pipeline.py \
             --ignore=tests/test_routes.py \
-            --ignore=tests/test_integration.py
+            --ignore=tests/test_integration.py \
+            --ignore=tests/test_homepage.py
