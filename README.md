@@ -75,3 +75,8 @@ app/templates/       # HTML templates
 tests/               # Automated tests
 requirements.txt     # Project dependencies
 app.py               # Application entry point
+
+
+
+Updated by Saeed Abu Hani on feature/saeed-in-jira
+
