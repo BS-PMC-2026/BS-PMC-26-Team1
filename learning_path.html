@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Learning Path</h1>
+    <p class="subtitle">Your structured journey to mastering CI/CD with clear module order and current step.</p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    {% if demo_mode %}
+    <div style="margin-bottom: 1rem; padding: 0.85rem; border-radius: 8px; background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.35); color: #ddd6fe;">
+        Lecturer Demo Mode: completion data shown here is presentation data and does not modify student records.
+    </div>
+    {% endif %}
+    <div style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background: rgba(15,23,42,0.8); border: 1px solid #334155;">
+        <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary);">Overall module completion</p>
+        <div style="height: 12px; border-radius: 6px; background: #1e293b; overflow: hidden;">
+            <div style="height: 100%; width: {{ stats.module_percent }}%; background: #4f46e5;"></div>
+        </div>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">
+            {{ stats.modules_completed }}/{{ stats.modules_total }} modules completed ({{ stats.module_percent }}%)
+        </p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for module in module_states %}
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; {% if module.completed %}border: 2px solid #10b981; background: rgba(16, 185, 129, 0.1);{% elif module.is_current %}border: 2px solid #f59e0b; background: rgba(245,158,11,0.12);{% else %}border: 2px solid #3b82f6; background: rgba(59, 130, 246, 0.1);{% endif %}">
+                <div style="flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: {% if module.completed %}#10b981{% elif module.is_current %}#f59e0b{% else %}#3b82f6{% endif %}; color: white; font-weight: bold;">
+                    {{ module.order }}
+                </div>
+                <div style="flex: 1;">
+                    <h3 style="margin: 0;">{{ module.title }}</h3>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">{{ module.description }}</p>
+                    {% if module.is_current and not module.completed %}
+                        <p style="margin: 0.35rem 0 0 0; font-size: 0.85rem; color: #fcd34d; font-weight: 600;">Current Step</p>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if module.completed %}
+                        <span style="color: #10b981; font-weight: bold;">✅ Completed</span>
+                    {% elif module.is_current %}
+                        <a href="{{ module.route }}" class="btn" style="background: #f59e0b; color: white;">Continue</a>
+                    {% else %}
+                        <a href="{{ module.route }}" class="btn" style="background: #3b82f6; color: white;">Start</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% if not loop.last %}
+                <div style="width: 2px; height: 30px; background: #334155; margin: -0.75rem 0 -0.75rem 2.2rem;"></div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
