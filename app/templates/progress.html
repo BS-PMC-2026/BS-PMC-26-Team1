@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Your Progress Dashboard</h1>
+    <p class="subtitle">Welcome, {{ user.full_name }} ({{ user.role.title() }})</p>
+</div>
+
+<div class="card" style="margin-bottom: 3rem;">
+    <h2>Course Progression</h2>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+        
+        {% set intro_color = '#10b981' if (record and record.intro_completed) else '#334155' %}
+        {% set intro_text = '#10b981' if (record and record.intro_completed) else '#94a3b8' %}
+        <div style="flex: 1; padding: 1rem; text-align: center; border-radius: 8px; border: 2px solid {{ intro_color }};">
+            <h3 style="color: {{ intro_text }}; margin: 0 0 0.5rem 0;">1. Intro</h3>
+            <span style="font-size: 1.5rem;">{% if record and record.intro_completed %}✅{% else %}⏳{% endif %}</span>
+        </div>
+        
+        {% set pipe_color = '#10b981' if (record and record.pipeline_viewed) else '#334155' %}
+        {% set pipe_text = '#10b981' if (record and record.pipeline_viewed) else '#94a3b8' %}
+        <div style="flex: 1; padding: 1rem; text-align: center; border-radius: 8px; border: 2px solid {{ pipe_color }};">
+            <h3 style="color: {{ pipe_text }}; margin: 0 0 0.5rem 0;">2. Pipeline</h3>
+            <span style="font-size: 1.5rem;">{% if record and record.pipeline_viewed %}✅{% else %}⏳{% endif %}</span>
+        </div>
+        
+        {% set ex_color = '#10b981' if (record and record.exercise_completed) else '#334155' %}
+        {% set ex_text = '#10b981' if (record and record.exercise_completed) else '#94a3b8' %}
+        <div style="flex: 1; padding: 1rem; text-align: center; border-radius: 8px; border: 2px solid {{ ex_color }};">
+            <h3 style="color: {{ ex_text }}; margin: 0 0 0.5rem 0;">3. Exercises</h3>
+            <span style="font-size: 1.5rem;">{% if record and record.exercise_completed %}✅{% else %}⏳{% endif %}</span>
+        </div>
+    </div>
+</div>
+
+<div style="display: flex; justify-content: space-between; gap: 2rem; margin-bottom: 3rem; flex-wrap: wrap;">
+    <div class="card" style="flex: 1; min-width: 250px; text-align: center;">
+        <h2 style="font-size: 3rem; margin: 0; color: var(--accent-color);">{{ total_attempts }}</h2>
+        <p style="color: var(--text-secondary); margin: 0;">Total Questions Answered</p>
+    </div>
+    <div class="card" style="flex: 1; min-width: 250px; text-align: center;">
+        {% set success_color = '#10b981' if success_rate >= 50 else '#ef4444' %}
+        <h2 style="font-size: 3rem; margin: 0; color: {{ success_color }};">{{ success_rate }}%</h2>
+        <p style="color: var(--text-secondary); margin: 0;">Success Rate</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Recent Activity Log</h2>
+    {% if attempts %}
+        <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid #334155;">
+                    <th style="padding: 1rem 0;">Date / Time</th>
+                    <th style="padding: 1rem 0;">Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in attempts %}
+                <tr style="border-bottom: 1px solid #1e293b;">
+                    <td style="padding: 1rem 0;">{{ attempt.timestamp.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+                    <td style="padding: 1rem 0;">
+                        {% if attempt.is_correct %}
+                            <span style="color: #10b981; font-weight: bold;">Correct</span>
+                        {% else %}
+                            <span style="color: #f87171; font-weight: bold;">Incorrect</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="color: var(--text-secondary);">No attempts logged yet. Go to <a href="/exercise" style="color: var(--accent-color);">Exercises</a> to get started!</p>
+    {% endif %}
+</div>
+
+<div class="action-container" style="margin-top: 2rem;">
+    <a href="/pipeline" class="btn btn-primary" style="background-color: var(--nav-bg); border: 1px solid var(--accent-color);">Review Material</a>
+</div>
+{% endblock %}

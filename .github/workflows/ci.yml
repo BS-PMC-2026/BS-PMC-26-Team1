@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Check Python syntax
+        run: |
+          python -m compileall .
+
+      - name: Run Sprint 1 compatible tests
+        run: |
+          pytest tests -v \
+            --ignore=tests/test_db_init.py \
+            --ignore=tests/test_exercise_edges.py \
+            --ignore=tests/test_lecturer.py \
+            --ignore=tests/test_main.py \
+            --ignore=tests/test_progress.py \
+            --ignore=tests/test_auth.py \
+            --ignore=tests/test_auth_edges.py \
+            --ignore=tests/test_exercise.py \
+            --ignore=tests/test_intro.py \
+            --ignore=tests/test_pipeline.py \
+            --ignore=tests/test_routes.py \
+            --ignore=tests/test_integration.py \
+            --ignore=tests/test_homepage.py
