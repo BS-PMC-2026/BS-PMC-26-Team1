@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>{{ question.title }}</h1>
+    <p class="subtitle">{{ question.content }}</p>
+</div>
+
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    {% if feedback %}
+        {% if feedback.is_correct %}
+        <div style="margin-bottom: 2rem; padding: 1rem; border-radius: 8px; background-color: #14532d; color: #fff; text-align: center;">
+        {% else %}
+        <div style="margin-bottom: 2rem; padding: 1rem; border-radius: 8px; background-color: #7f1d1d; color: #fff; text-align: center;">
+        {% endif %}
+            <h2 style="margin-top: 0;">{{ feedback.status }}</h2>
+            <p style="white-space: pre-line;">{{ feedback.explanation }}</p>
+            {% if feedback.question_type == 'code' %}
+                <p style="margin: 0; font-size: 0.9rem; opacity: 0.95;">Code tests passed: {{ feedback.passed_test_count }}</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <form action="/exercise?q={{ q_index }}{% if random_mode %}&random=1{% endif %}" method="POST" id="exerciseForm">
+        {% if question.type == 'mcq' %}
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                {% for option in question.options %}
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 1rem; border: 1px solid #334155; border-radius: 8px;">
+                    <input type="radio" name="answer" value="{{ option }}" required>
+                    <span>{{ option }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 2rem; width: 100%;">Submit Answer</button>
+
+        {% elif question.type == 'open' %}
+            <div style="margin-top: 1rem;">
+                <textarea name="open_answer" rows="6" required style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #020617; color: #e2e8f0; font-size: 1rem;" placeholder="Write your answer here..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 2rem; width: 100%;">Submit Answer</button>
+            
+        {% elif question.type == 'code' %}
+            <div style="margin-top: 0.75rem; margin-bottom: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; font-size: 0.9rem; color: #cbd5e1; line-height: 1.55;">
+                <div>Language: {{ question.display_language }}</div>
+                <div>Interpreter: {{ question.compiler_info }}</div>
+                <div>Environment: {{ question.execution_environment }}</div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <textarea id="code_answer" name="code_answer" rows="8" style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #020617; color: #a78bfa; font-family: monospace; font-size: 1rem;">{{ question.starter_code }}</textarea>
+            </div>
+            
+            <div id="outputConsole" style="display:none; margin-top:1rem; padding:1rem; border-radius:4px; background:#000; color:#4ade80; font-family:monospace; white-space:pre-wrap;">
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="button" onclick="runCode()" class="btn" style="flex: 1; background: #475569; color: white;">Run Code</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Submit Answer</button>
+            </div>
+            
+            <script>
+            async function runCode() {
+                const code = document.getElementById('code_answer').value;
+                const consoleDiv = document.getElementById('outputConsole');
+                consoleDiv.style.display = 'block';
+                consoleDiv.innerText = "Running...";
+                
+                try {
+                    let response = await fetch('/exercise/run', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code: code, question_id: {{ question.id }} })
+                    });
+                    let data = await response.json();
+                    consoleDiv.innerText = data.output;
+                } catch (e) {
+                    consoleDiv.innerText = "Error running code.";
+                }
+            }
+            </script>
+        {% endif %}
+    </form>
+</div>
+
+<div class="action-container" style="margin-top: 3rem; display: flex; justify-content: center; gap: 1rem;">
+    <a href="/exercise?random=1" class="btn btn-primary" style="background-color: var(--nav-bg); border: 1px solid var(--accent-color);">Shuffle Session</a>
+    {% if q_index > 0 %}
+        <a href="/exercise?q={{ q_index - 1 }}{% if random_mode %}&random=1{% endif %}" class="btn btn-primary" style="background-color: var(--nav-bg); border: 1px solid var(--accent-color);">Previous</a>
+    {% endif %}
+    {% if q_index < total_questions - 1 %}
+        <a href="/exercise?q={{ q_index + 1 }}{% if random_mode %}&random=1{% endif %}" class="btn btn-primary" style="background-color: var(--nav-bg); border: 1px solid var(--accent-color);">Next Question</a>
+    {% elif feedback %}
+        <a href="/progress" class="btn btn-primary" style="background-color: #4f46e5;">Finish &amp; View Dashboard</a>
+    {% endif %}
+    <a href="/progress" class="btn btn-primary" style="background-color: var(--nav-bg); border: 1px solid var(--accent-color);">View Dashboard</a>
+</div>
+{% endblock %}
