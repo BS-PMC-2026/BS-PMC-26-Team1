@@ -40,6 +40,11 @@
             <button type="submit" class="btn btn-primary" style="margin-top: 2rem; width: 100%;">Submit Answer</button>
             
         {% elif question.type == 'code' %}
+            <div style="margin-top: 0.75rem; margin-bottom: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; font-size: 0.9rem; color: #cbd5e1; line-height: 1.55;">
+                <div>Language: {{ question.display_language }}</div>
+                <div>Interpreter: {{ question.compiler_info }}</div>
+                <div>Environment: {{ question.execution_environment }}</div>
+            </div>
             <div style="margin-top: 1rem;">
                 <textarea id="code_answer" name="code_answer" rows="8" style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #020617; color: #a78bfa; font-family: monospace; font-size: 1rem;">{{ question.starter_code }}</textarea>
             </div>
