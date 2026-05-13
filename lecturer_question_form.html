@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>{% if mode == 'edit' %}Edit Question{% else %}Create Question{% endif %}</h1>
+    <p class="subtitle">Manage the question bank with full metadata and answer details.</p>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <form method="POST" style="display:flex; flex-direction:column; gap:1rem;">
+        <div>
+            <label style="display:block; margin-bottom:0.5rem;">Question Text</label>
+            <textarea name="question_text" rows="4" required style="width:100%; padding:0.75rem; border-radius:4px; border:1px solid #334155; background:#0f172a; color:#fff;">{{ question.question_text if question else '' }}</textarea>
+        </div>
+
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <div style="flex:1; min-width:180px;">
+                <label style="display:block; margin-bottom:0.5rem;">Type</label>
+                <select name="question_type" id="question_type" style="width:100%; padding:0.75rem; border-radius:4px; border:1px solid #334155; background:#0f172a; color:#fff;">
+                    {% set q_type = question.question_type if question else 'mcq' %}
+                    <option value="mcq" {% if q_type == 'mcq' %}selected{% endif %}>MCQ</option>
+                    <option value="code" {% if q_type == 'code' %}selected{% endif %}>CODE</option>
+                    <option value="open" {% if q_type == 'open' %}selected{% endif %}>OPEN</option>
+                </select>
+            </div>
+            <div style="flex:1; min-width:180px;">
+                <label style="display:block; margin-bottom:0.5rem;">Difficulty</label>
+                {% set q_diff = question.difficulty if question else 'medium' %}
+                <select name="difficulty" style="width:100%; padding:0.75rem; border-radius:4px; border:1px solid #334155; background:#0f172a; color:#fff;">
+                    <option value="easy" {% if q_diff == 'easy' %}selected{% endif %}>Easy</option>
+                    <option value="medium" {% if q_diff == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="hard" {% if q_diff == 'hard' %}selected{% endif %}>Hard</option>
+                </select>
+            </div>
+            <div style="flex:1; min-width:180px;">
+                <label style="display:block; margin-bottom:0.5rem;">Module</label>
+                {% set q_module = question.module_id if question else 0 %}
+                <select name="module_id" required style="width:100%; padding:0.75rem; border-radius:4px; border:1px solid #334155; background:#0f172a; color:#fff;">
+                    {% for m in modules %}
+                    <option value="{{ m.id }}" {% if q_module == m.id %}selected{% endif %}>{{ m.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label style="display:block; margin-bottom:0.5rem;">Correct Answer</label>
+            <input type="text" name="correct_answer" required value="{{ question.correct_answer if question else '' }}" style="width:100%; padding:0.75rem; border-radius:4px; border:1px solid #334155; background:#0f172a; color:#fff;">
+        </div>
+
+        <div>
+            <label style="display:block; margin-bottom:0.5rem;">Explanation</label>
+            <textarea name="explanation" rows="3" required style="width:100%; padding:0.75rem; border-radius:4px; border:1px solid #334155; background:#0f172a; color:#fff;">{{ question.explanation if question else '' }}</textarea>
+        </div>
+
+        <div>
+            <label style="display:block; margin-bottom:0.5rem;">MCQ Options (one option per line)</label>
+            <textarea name="options" rows="4" style="width:100%; padding:0.75rem; border-radius:4px; border:1px solid #334155; background:#0f172a; color:#fff;">{% if question and question.options %}{{ question.options | join('\n') }}{% endif %}</textarea>
+        </div>
+
+        <div>
+            <label style="display:block; margin-bottom:0.5rem;">Starter Code (for CODE type)</label>
+            <textarea name="starter_code" rows="4" style="width:100%; padding:0.75rem; border-radius:4px; border:1px solid #334155; background:#0f172a; color:#fff;">{{ question.starter_code if question else '' }}</textarea>
+        </div>
+
+        <div>
+            <label style="display:block; margin-bottom:0.5rem;">Test Cases JSON (for CODE type)</label>
+            <textarea name="test_cases_json" rows="4" style="width:100%; padding:0.75rem; border-radius:4px; border:1px solid #334155; background:#0f172a; color:#fff;">{{ question.test_cases_json if question else '' }}</textarea>
+        </div>
+
+        {% if mode == 'edit' %}
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <input type="checkbox" id="is_active" name="is_active" {% if question.is_active %}checked{% endif %}>
+            <label for="is_active">Active Question</label>
+        </div>
+        {% endif %}
+
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <button class="btn btn-primary" type="submit">{% if mode == 'edit' %}Save Changes{% else %}Create Question{% endif %}</button>
+            <a href="/lecturer/questions" class="btn" style="background:#334155; color:#fff;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
