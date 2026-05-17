@@ -2,9 +2,9 @@ name: Hackaton 2026 CI
 
 on:
   push:
-    branches: [develop, main]
+    branches: [hackaton_2026, develop, main]
   pull_request:
-    branches: [develop, main]
+    branches: [hackaton_2026, develop, main]
   workflow_dispatch:
 
 jobs:
