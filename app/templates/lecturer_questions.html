@@ -6,43 +6,57 @@
     <p class="subtitle">Create, update, and delete MCQ, Code, and Open questions.</p>
 </div>
 
-<div class="action-container" style="margin-bottom: 1.5rem; justify-content: flex-start;">
-    <a href="/lecturer/questions/new" class="btn btn-primary">+ Add Question</a>
+<div class="action-container" style="margin-bottom: var(--ds-space-5); justify-content: flex-start;">
+    <a href="/lecturer/questions/new" class="ds-btn ds-btn-primary">+ Add Question</a>
 </div>
 
-<div class="card">
+<div class="ds-card">
     {% if questions %}
-    <table style="width:100%; border-collapse: collapse;">
+    <table class="ds-table">
         <thead>
-            <tr style="border-bottom:2px solid #334155;">
-                <th style="text-align:left; padding:0.75rem 0;">ID</th>
-                <th style="text-align:left; padding:0.75rem 0;">Type</th>
-                <th style="text-align:left; padding:0.75rem 0;">Module</th>
-                <th style="text-align:left; padding:0.75rem 0;">Difficulty</th>
-                <th style="text-align:left; padding:0.75rem 0;">Status</th>
-                <th style="text-align:left; padding:0.75rem 0;">Actions</th>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Module</th>
+                <th>Difficulty</th>
+                <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for q in questions %}
-            <tr style="border-bottom:1px solid #1e293b;">
-                <td style="padding:0.75rem 0;">{{ q.id }}</td>
-                <td style="padding:0.75rem 0;">{{ q.question_type.upper() }}</td>
-                <td style="padding:0.75rem 0;">{{ modules_by_id[q.module_id].name if modules_by_id.get(q.module_id) else '-' }}</td>
-                <td style="padding:0.75rem 0;">{{ q.difficulty }}</td>
-                <td style="padding:0.75rem 0;">{{ 'Active' if q.is_active else 'Inactive' }}</td>
-                <td style="padding:0.75rem 0; display:flex; gap:0.5rem; flex-wrap:wrap;">
-                    <a href="/lecturer/questions/{{ q.id }}/edit" class="btn" style="background:#334155; color:#fff;">Edit</a>
-                    <form action="/lecturer/questions/{{ q.id }}/delete" method="POST" onsubmit="return confirm('Delete this question?');">
-                        <button type="submit" class="btn" style="background:#7f1d1d; color:#fff;">Delete</button>
-                    </form>
+            <tr>
+                <td>{{ q.id }}</td>
+                <td><span class="ds-pill">{{ q.question_type.upper() }}</span></td>
+                <td>{{ modules_by_id[q.module_id].name if modules_by_id.get(q.module_id) else '-' }}</td>
+                <td>{{ q.difficulty }}</td>
+                <td>
+                    {% if q.is_active %}
+                        <span class="ds-pill ds-pill-success">Active</span>
+                    {% else %}
+                        <span class="ds-pill ds-pill-error">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="ds-flex ds-gap-2" style="flex-wrap: wrap;">
+                        <a href="/lecturer/questions/{{ q.id }}/edit" class="ds-btn ds-btn-mint ds-btn-sm">Edit</a>
+                        <form action="/lecturer/questions/{{ q.id }}/delete" method="POST" onsubmit="return confirm('Delete this question?');" style="margin:0;">
+                            <button type="submit" class="ds-btn ds-btn-sm" style="background: var(--ds-state-error); color: var(--ds-text-light);">Delete</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <p style="color: var(--text-secondary);">No questions available yet.</p>
+    <div class="ds-alert ds-alert--info" role="status">
+        <div class="ds-alert__icon" aria-hidden="true">i</div>
+        <div class="ds-alert__body">
+            <h3 class="ds-alert__title">No questions yet</h3>
+            <p class="ds-alert__message">Click <strong>+ Add Question</strong> above to seed the question bank.</p>
+        </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

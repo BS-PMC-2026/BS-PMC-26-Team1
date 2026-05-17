@@ -1,34 +1,133 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="hero" style="text-align: center; padding: 4rem 2rem;">
-    <h1>Welcome to CI/CD Learning Platform</h1>
-    <p>Master Continuous Integration and Continuous Deployment in an interactive environment. Follow the guided learning path from theory to exercises and track your progress in real time.</p>
-    
-    <div style="margin-top: 3rem; display: flex; justify-content: center; gap: 2rem;">
-        <div class="card" style="text-align: center; width: 100%; max-width: 500px;">
-            <h2>Launch Your Journey</h2>
-            <p>Learn CI/CD concepts by completing an Intro module, exploring a visual pipeline, and solving interactive exercises with instant feedback.</p>
-            <br>
-            <a href="/start" class="btn btn-primary" id="start-learning-btn" style="background-color: #4f46e5; font-size: 1.25rem; padding: 1rem 2.5rem; border-radius: 8px;">Start Learning</a>
-            <div style="margin-top: 1rem;">
-                {% if is_authenticated %}
-                    <a href="/learning-path" style="color: var(--accent-color);">Continue from Learning Path</a>
-                {% else %}
-                    <a href="/register" style="color: var(--accent-color);">New student? Create account</a>
-                {% endif %}
+<section class="ds-hero-split">
+    <div class="ds-hero-text">
+        <span class="ds-pill">✦ E-Learning Platform</span>
+        <h1 class="ds-hero-title">Welcome to CI/CD Learning Platform</h1>
+        <p class="ds-subtitle" style="max-width: 520px;">
+            Master Continuous Integration and Continuous Deployment in an interactive environment.
+            Follow the guided learning path from theory to exercises and track your progress in real time.
+        </p>
+        <div class="ds-flex ds-gap-4 ds-mt-6" style="flex-wrap: wrap;">
+            <a href="/start" id="start-learning-btn" class="ds-btn ds-btn-primary ds-btn-lg">
+                Start Learning →
+            </a>
+            <a href="/learning-path" class="ds-btn ds-btn-outline ds-btn-lg">
+                ▶ &nbsp; How it works
+            </a>
+        </div>
+        <p class="ds-mt-4" style="margin-bottom:0;">
+            {% if is_authenticated %}
+                <a href="/learning-path" class="ds-text-primary" style="text-decoration: none; font-weight: var(--ds-weight-title);">
+                    Continue from Learning Path →
+                </a>
+            {% else %}
+                <a href="/register" class="ds-text-primary" style="text-decoration: none; font-weight: var(--ds-weight-title);">
+                    New student? Create account →
+                </a>
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="ds-hero-visual">
+        <span class="ds-blob ds-blob-mint ds-blob-md"   style="top: 4%; left: -6%;"    aria-hidden="true"></span>
+        <span class="ds-blob ds-blob-yellow ds-blob-sm" style="top: 14%; right: -6%;"  aria-hidden="true"></span>
+        <span class="ds-blob ds-blob-purple ds-blob-sm" style="bottom: 18%; left: -8%;" aria-hidden="true"></span>
+        <span class="ds-blob ds-blob-blue ds-blob-md"   style="bottom: -4%; right: 4%;" aria-hidden="true"></span>
+
+        <img src="{{ url_for('static', filename='img/hero-learner.svg') }}"
+             alt="Illustrated learner with laptop"
+             class="ds-hero-image">
+
+        <div class="ds-hero-badge" aria-hidden="false">
+            <span class="ds-pill ds-pill-success" style="font-size: var(--ds-fs-micro);">●</span>
+            <div>
+                <strong>Live progress tracking</strong>
+                <small>Real-time feedback</small>
             </div>
         </div>
     </div>
+</section>
 
-    <div class="card" style="text-align: left; max-width: 850px; margin: 2rem auto 0 auto;">
-        <h2 style="margin-top: 0;">How learning flows in this platform</h2>
-        <ol style="line-height: 1.9; color: var(--text-secondary);">
-            <li><strong style="color: var(--text-primary);">Intro Module</strong> — understand CI, CD, benefits, and practical software team workflows.</li>
-            <li><strong style="color: var(--text-primary);">Pipeline Visualization</strong> — click each stage to inspect what happens during delivery.</li>
-            <li><strong style="color: var(--text-primary);">Exercises</strong> — answer MCQ and coding questions and receive immediate explanations.</li>
-            <li><strong style="color: var(--text-primary);">Dashboard</strong> — review module completion, score, and remaining steps.</li>
-        </ol>
+{# "Launch Your Journey" highlight card #}
+<section class="ds-card ds-text-center" style="max-width: 720px; margin: 0 auto;">
+    <span class="ds-pill ds-pill-mint">Get started</span>
+    <h2 class="ds-mt-4">Launch Your Journey</h2>
+    <p class="ds-subtitle" style="max-width: 540px; margin: var(--ds-space-3) auto var(--ds-space-5);">
+        Learn CI/CD concepts by completing an Intro module, exploring a visual pipeline,
+        and solving interactive exercises with instant feedback.
+    </p>
+    <div class="ds-flex ds-justify-center ds-gap-4" style="flex-wrap: wrap;">
+        <a href="/start" class="ds-btn ds-btn-primary ds-btn-lg">Start Learning</a>
+        {% if is_authenticated %}
+            <a href="/learning-path" class="ds-btn ds-btn-mint ds-btn-lg">Continue Learning Path →</a>
+        {% else %}
+            <a href="/register" class="ds-btn ds-btn-mint ds-btn-lg">Create account →</a>
+        {% endif %}
     </div>
-</div>
+</section>
+
+{# Brand Photography gallery — three learner cards with color halos, as in the spec #}
+<section style="margin-top: var(--ds-space-7);">
+    <div class="ds-text-center" style="margin-bottom: var(--ds-space-6);">
+        <span class="ds-pill">Brand Photography</span>
+        <h2 class="ds-mt-2">Built around real learners</h2>
+        <p class="ds-subtitle" style="max-width: 540px; margin: 0 auto;">
+            Every screen blends imagery, color and motion so the platform feels human and approachable.
+        </p>
+    </div>
+    <div class="ds-row" style="justify-content: center; gap: var(--ds-space-6);">
+        <div class="ds-photo-card" style="flex: 0 1 220px;">
+            <span class="ds-photo-card__halo ds-photo-card__halo--blue" aria-hidden="true"></span>
+            <img src="{{ url_for('static', filename='img/student-1.svg') }}" alt="" class="ds-photo-card__img">
+            <span class="ds-photo-card__label">Question #1</span>
+        </div>
+        <div class="ds-photo-card" style="flex: 0 1 220px;">
+            <span class="ds-photo-card__halo ds-photo-card__halo--purple" aria-hidden="true"></span>
+            <img src="{{ url_for('static', filename='img/student-2.svg') }}" alt="" class="ds-photo-card__img">
+            <span class="ds-photo-card__label ds-photo-card__label--mint">Click to learn</span>
+        </div>
+        <div class="ds-photo-card" style="flex: 0 1 220px;">
+            <span class="ds-photo-card__halo ds-photo-card__halo--mint" aria-hidden="true"></span>
+            <img src="{{ url_for('static', filename='img/student-3.svg') }}" alt="" class="ds-photo-card__img">
+            <span class="ds-photo-card__label">Try Lesson</span>
+        </div>
+    </div>
+</section>
+
+{# Learning flow guide – four steps 1 → 4 (Issue 4) #}
+<section class="ds-card" style="margin-top: var(--ds-space-7);">
+    <div class="ds-text-center" style="margin-bottom: var(--ds-space-5);">
+        <span class="ds-pill">Learning Flow</span>
+        <h2 class="ds-mt-2">How learning flows in this platform</h2>
+        <p class="ds-subtitle">A guided four-step journey from theory to practice.</p>
+    </div>
+
+    <div class="ds-pipeline">
+        <div class="ds-pipeline-stage">
+            <div class="ds-pipeline-step-num">1</div>
+            <h3 class="ds-mt-0">Intro Module</h3>
+            <p class="ds-text-muted" style="margin-bottom:0;">Understand CI, CD, benefits, and practical workflows.</p>
+        </div>
+        <div class="ds-pipeline-arrow" aria-hidden="true">→</div>
+        <div class="ds-pipeline-stage">
+            <div class="ds-pipeline-step-num" style="background: var(--ds-btn-orange);">2</div>
+            <h3 class="ds-mt-0">Pipeline Visualization</h3>
+            <p class="ds-text-muted" style="margin-bottom:0;">Click each stage to inspect what happens during delivery.</p>
+        </div>
+        <div class="ds-pipeline-arrow" aria-hidden="true">→</div>
+        <div class="ds-pipeline-stage">
+            <div class="ds-pipeline-step-num" style="background: var(--ds-state-success);">3</div>
+            <h3 class="ds-mt-0">Exercises</h3>
+            <p class="ds-text-muted" style="margin-bottom:0;">Answer MCQ and coding questions with immediate explanations.</p>
+        </div>
+        <div class="ds-pipeline-arrow" aria-hidden="true">→</div>
+        <div class="ds-pipeline-stage">
+            <div class="ds-pipeline-step-num" style="background: var(--ds-btn-purple-strong);">4</div>
+            <h3 class="ds-mt-0">Dashboard</h3>
+            <p class="ds-text-muted" style="margin-bottom:0;">Review module completion, score and remaining steps.</p>
+        </div>
+    </div>
+</section>
 {% endblock %}

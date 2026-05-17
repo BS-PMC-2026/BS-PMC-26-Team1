@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Theory Content Management</h1>
+    <p class="subtitle">Update student-facing explanations and examples for learning modules.</p>
+</div>
+
+<div class="ds-card">
+    {% if theory_rows %}
+    <table class="ds-table">
+        <thead>
+            <tr>
+                <th>Module</th>
+                <th>Headline</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in theory_rows %}
+            <tr>
+                <td><span class="ds-pill">{{ row.module.name }}</span></td>
+                <td>{{ row.content.headline }}</td>
+                <td>
+                    <a href="/lecturer/theory/{{ row.module.name|lower }}" class="ds-btn ds-btn-mint ds-btn-sm">Edit Theory</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="ds-alert ds-alert--info" role="status">
+        <div class="ds-alert__icon" aria-hidden="true">i</div>
+        <div class="ds-alert__body">
+            <h3 class="ds-alert__title">No theory modules yet</h3>
+            <p class="ds-alert__message">Theory content for Intro and Pipeline modules will appear here once seeded.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
