@@ -85,3 +85,61 @@ def run_student_code(code: str, test_cases: list):
         "passed": return_dict.get('passed', 0),
         "total": len(test_cases)
     }
+
+
+def normalize_language(language):
+    """
+    Normalize programming language input to a consistent internal value.
+    """
+    if not language:
+        return "python"
+
+    lang = str(language).strip().lower()
+
+    aliases = {
+        "py": "python",
+        "python3": "python",
+        "python": "python",
+        "js": "javascript",
+        "javascript": "javascript",
+        "java": "java",
+        "c++": "cpp",
+        "cpp": "cpp",
+        "c": "c",
+    }
+
+    return aliases.get(lang, lang)
+
+
+def default_compiler_label(language=None):
+    """
+    Return a readable compiler/interpreter label for the selected language.
+    """
+    lang = normalize_language(language)
+
+    labels = {
+        "python": "Python 3.11",
+        "javascript": "Node.js",
+        "java": "Java JDK",
+        "cpp": "G++",
+        "c": "GCC",
+    }
+
+    return labels.get(lang, "Default Compiler")
+
+
+def default_environment_label(language=None):
+    """
+    Return a readable runtime/environment label for the selected language.
+    """
+    lang = normalize_language(language)
+
+    environments = {
+        "python": "Python Runtime Environment",
+        "javascript": "Node.js Runtime Environment",
+        "java": "Java Runtime Environment",
+        "cpp": "C++ Runtime Environment",
+        "c": "C Runtime Environment",
+    }
+
+    return environments.get(lang, "Default Runtime Environment")
