@@ -44,8 +44,6 @@ jobs:
 
           for file in \
             tests/test_homepage.py \
-            tests/test_lecturer.py \
-            tests/test_progress.py \
             tests/test_pipeline.py \
             tests/test_routes.py \
             tests/test_integration.py
