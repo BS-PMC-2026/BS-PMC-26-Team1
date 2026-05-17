@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Question Bank Management</h1>
+    <p class="subtitle">Create, update, and delete MCQ, Code, and Open questions.</p>
+</div>
+
+<div class="action-container" style="margin-bottom: 1.5rem; justify-content: flex-start;">
+    <a href="/lecturer/questions/new" class="btn btn-primary">+ Add Question</a>
+</div>
+
+<div class="card">
+    {% if questions %}
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom:2px solid #334155;">
+                <th style="text-align:left; padding:0.75rem 0;">ID</th>
+                <th style="text-align:left; padding:0.75rem 0;">Type</th>
+                <th style="text-align:left; padding:0.75rem 0;">Module</th>
+                <th style="text-align:left; padding:0.75rem 0;">Difficulty</th>
+                <th style="text-align:left; padding:0.75rem 0;">Status</th>
+                <th style="text-align:left; padding:0.75rem 0;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in questions %}
+            <tr style="border-bottom:1px solid #1e293b;">
+                <td style="padding:0.75rem 0;">{{ q.id }}</td>
+                <td style="padding:0.75rem 0;">{{ q.question_type.upper() }}</td>
+                <td style="padding:0.75rem 0;">{{ modules_by_id[q.module_id].name if modules_by_id.get(q.module_id) else '-' }}</td>
+                <td style="padding:0.75rem 0;">{{ q.difficulty }}</td>
+                <td style="padding:0.75rem 0;">{{ 'Active' if q.is_active else 'Inactive' }}</td>
+                <td style="padding:0.75rem 0; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <a href="/lecturer/questions/{{ q.id }}/edit" class="btn" style="background:#334155; color:#fff;">Edit</a>
+                    <form action="/lecturer/questions/{{ q.id }}/delete" method="POST" onsubmit="return confirm('Delete this question?');">
+                        <button type="submit" class="btn" style="background:#7f1d1d; color:#fff;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: var(--text-secondary);">No questions available yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

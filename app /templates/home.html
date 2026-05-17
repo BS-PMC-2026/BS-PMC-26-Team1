@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero" style="text-align: center; padding: 4rem 2rem;">
+    <h1>Welcome to CI/CD Learning Platform</h1>
+    <p>Master Continuous Integration and Continuous Deployment in an interactive environment. Follow the guided learning path from theory to exercises and track your progress in real time.</p>
+    
+    <div style="margin-top: 3rem; display: flex; justify-content: center; gap: 2rem;">
+        <div class="card" style="text-align: center; width: 100%; max-width: 500px;">
+            <h2>Launch Your Journey</h2>
+            <p>Learn CI/CD concepts by completing an Intro module, exploring a visual pipeline, and solving interactive exercises with instant feedback.</p>
+            <br>
+            <a href="/start" class="btn btn-primary" id="start-learning-btn" style="background-color: #4f46e5; font-size: 1.25rem; padding: 1rem 2.5rem; border-radius: 8px;">Start Learning</a>
+            <div style="margin-top: 1rem;">
+                {% if is_authenticated %}
+                    <a href="/learning-path" style="color: var(--accent-color);">Continue from Learning Path</a>
+                {% else %}
+                    <a href="/register" style="color: var(--accent-color);">New student? Create account</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: left; max-width: 850px; margin: 2rem auto 0 auto;">
+        <h2 style="margin-top: 0;">How learning flows in this platform</h2>
+        <ol style="line-height: 1.9; color: var(--text-secondary);">
+            <li><strong style="color: var(--text-primary);">Intro Module</strong> — understand CI, CD, benefits, and practical software team workflows.</li>
+            <li><strong style="color: var(--text-primary);">Pipeline Visualization</strong> — click each stage to inspect what happens during delivery.</li>
+            <li><strong style="color: var(--text-primary);">Exercises</strong> — answer MCQ and coding questions and receive immediate explanations.</li>
+            <li><strong style="color: var(--text-primary);">Dashboard</strong> — review module completion, score, and remaining steps.</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
