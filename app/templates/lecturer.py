@@ -5,7 +5,7 @@ lecturer_bp = Blueprint("lecturer", __name__, url_prefix="/lecturer")
 
 def lecturer_required():
     return session.get("role") == "lecturer" or session.get("demo_mode") is True
-
+ 
 
 @lecturer_bp.route("/dashboard")
 def dashboard():
