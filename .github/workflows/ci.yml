@@ -2,13 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [develop]
+    branches:
+      - develop
+      - main
   pull_request:
-    branches: [develop]
+    branches:
+      - develop
+      - main
   workflow_dispatch:
 
 jobs:
-  test:
+  build-test-coverage:
+    name: Build, Test and Coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -18,31 +23,45 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
+
+      - name: Show Python version
+        run: |
+          python --version
+          python -m pip --version
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest
+          if [ -f requirements.txt ]; then
+            python -m pip install -r requirements.txt
+          fi
+          python -m pip install pytest pytest-cov flake8
 
       - name: Check Python syntax
         run: |
           python -m compileall .
 
-      - name: Run Sprint 1 compatible tests
+      - name: Run automated tests
         run: |
-          pytest tests -v \
-            --ignore=tests/test_db_init.py \
-            --ignore=tests/test_exercise_edges.py \
-            --ignore=tests/test_lecturer.py \
-            --ignore=tests/test_main.py \
-            --ignore=tests/test_progress.py \
-            --ignore=tests/test_auth.py \
-            --ignore=tests/test_auth_edges.py \
-            --ignore=tests/test_exercise.py \
-            --ignore=tests/test_intro.py \
-            --ignore=tests/test_pipeline.py \
-            --ignore=tests/test_routes.py \
-            --ignore=tests/test_integration.py \
-            --ignore=tests/test_homepage.py
+          python -m pytest tests -v
+
+      - name: Run coverage report
+        run: |
+          python -m pytest --cov=. --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage XML artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-xml
+          path: coverage.xml
+
+      - name: Upload pytest cache and evidence if exists
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-run-evidence
+          path: |
+            .pytest_cache
+            coverage.xml
+          if-no-files-found: ignore
