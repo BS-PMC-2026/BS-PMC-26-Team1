@@ -55,13 +55,3 @@ jobs:
         with:
           name: coverage-report-xml
           path: coverage.xml
-
-      - name: Upload pytest cache and evidence if exists
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-run-evidence
-          path: |
-            .pytest_cache
-            coverage.xml
-          if-no-files-found: ignore
