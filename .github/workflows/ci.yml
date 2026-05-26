@@ -15,6 +15,7 @@ jobs:
   build-test-coverage:
     name: Build, Test and Coverage
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -44,14 +45,18 @@ jobs:
 
       - name: Run automated tests
         run: |
-          python -m pytest tests -v
+          python -m pytest tests -v --junitxml=pytest_junit_report.xml
 
       - name: Run coverage report
         run: |
-          python -m pytest --cov=. --cov-report=term-missing --cov-report=xml
+          python -m pytest --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml
 
-      - name: Upload coverage XML artifact
+      - name: Upload test and coverage artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report-xml
-          path: coverage.xml
+          name: ci-test-and-coverage-evidence
+          path: |
+            pytest_junit_report.xml
+            coverage.xml
+          if-no-files-found: ignore
