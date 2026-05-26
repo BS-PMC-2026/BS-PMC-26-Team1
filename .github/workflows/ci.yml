@@ -1,4 +1,4 @@
-name: CI
+name: CI - Test, Coverage and Azure Readiness
 
 on:
   push:
@@ -10,6 +10,15 @@ on:
       - develop
       - main
   workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.11"
+
+  # Azure resources created for Sprint 3 deployment-readiness evidence
+  AZURE_WEBAPP_NAME: "s-y-i-b-team-test-app-sce"
+  AZURE_RESOURCE_GROUP: "bs-pm-2026-team1"
+  AZURE_SQL_SERVER_NAME: "azure-s-y-i-b-team1-sql-server"
+  AZURE_SQL_DATABASE_NAME: "db-app-test"
 
 jobs:
   build-test-coverage:
@@ -24,12 +33,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Show Python version
+      - name: Show environment information
         run: |
           python --version
           python -m pip --version
+          echo "Azure Web App: $AZURE_WEBAPP_NAME"
+          echo "Azure Resource Group: $AZURE_RESOURCE_GROUP"
+          echo "Azure SQL Server: $AZURE_SQL_SERVER_NAME"
+          echo "Azure SQL Database: $AZURE_SQL_DATABASE_NAME"
 
       - name: Install dependencies
         run: |
@@ -43,7 +56,7 @@ jobs:
         run: |
           python -m compileall .
 
-      - name: Run automated tests
+      - name: Run automated tests and create JUnit report
         run: |
           python -m pytest tests -v --junitxml=pytest_junit_report.xml
 
@@ -60,3 +73,60 @@ jobs:
             pytest_junit_report.xml
             coverage.xml
           if-no-files-found: ignore
+
+  azure-readiness:
+    name: Azure Deployment Readiness Check
+    runs-on: ubuntu-latest
+    needs: build-test-coverage
+    timeout-minutes: 10
+
+    steps:
+      - name: Print Azure deployment-readiness configuration
+        run: |
+          echo "Azure deployment-readiness resources for Sprint 3:"
+          echo "Resource Group: $AZURE_RESOURCE_GROUP"
+          echo "App Service: $AZURE_WEBAPP_NAME"
+          echo "SQL Server: $AZURE_SQL_SERVER_NAME"
+          echo "SQL Database: $AZURE_SQL_DATABASE_NAME"
+          echo ""
+          echo "Note: Hosted GitHub Actions execution may be blocked by account billing/spending-limit restrictions."
+          echo "When hosted execution is unavailable, the same validation is executed manually using manual_ci.ps1."
+
+      # Optional real Azure validation.
+      # This step works only if the repository has a valid AZURE_CREDENTIALS secret.
+      - name: Azure login
+        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Check Azure App Service status
+        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        run: |
+          az webapp show \
+            --name "$AZURE_WEBAPP_NAME" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --query "{name:name,state:state,defaultHostName:defaultHostName,resourceGroup:resourceGroup}" \
+            --output table
+
+      - name: Check Azure SQL Database status
+        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        run: |
+          az sql db show \
+            --server "$AZURE_SQL_SERVER_NAME" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_SQL_DATABASE_NAME" \
+            --query "{name:name,status:status,edition:edition,serviceObjectiveName:serviceObjectiveName}" \
+            --output table
+
+      # Optional deployment step.
+      # Do NOT enable this unless the Azure App Service quota issue is solved
+      # and the repository has AZURE_WEBAPP_PUBLISH_PROFILE configured.
+      #
+      # - name: Deploy to Azure App Service
+      #   if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE != '' }}
+      #   uses: azure/webapps-deploy@v3
+      #   with:
+      #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
+      #     publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+      #     package: .
