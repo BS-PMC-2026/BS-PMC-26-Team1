@@ -64,6 +64,31 @@ At this stage, the project includes:
 
 ---
 
+# Manual CI/CD Validation – Sprint 3
+
+During Sprint 3, hosted GitHub Actions execution was unavailable due to an account billing/spending-limit restriction.
+
+Following the lecturer's instruction, the team executed the CI/CD validation manually using equivalent pipeline steps:
+
+1. Install dependencies
+2. Check Python syntax
+3. Run the automated Pytest suite
+4. Generate coverage reports
+5. Save test and coverage evidence
+
+## Manual CI Result
+
+- Automated tests: 278 passed
+- Failed tests: 0
+- Coverage: 96%
+- Evidence folder: Sprint3_Evidence
+
+## Manual CI Script
+
+The repository includes:
+
+```text
+manual_ci.ps1
 ## Repository Structure
 ```text
 .github/workflows/   # GitHub Actions workflow
