@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Exercise Hub</h1>
+    <p class="subtitle">Choose your practice track — knowledge quiz or hands-on coding.</p>
+</div>
+
+{% if empty_track %}
+<div class="ds-alert ds-alert--info" role="status">
+    <div class="ds-alert__icon" aria-hidden="true">i</div>
+    <div class="ds-alert__body">
+        <h3 class="ds-alert__title">No questions in this track right now</h3>
+        <p class="ds-alert__message">
+            The selected track ({{ empty_track }}) is currently empty.
+            Try the other track or ask a lecturer to add more questions.
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<div class="ds-row" style="margin-top: var(--ds-space-5);">
+    <article class="ds-card" style="flex:1; min-width:280px; border-left: 4px solid var(--ds-state-info);">
+        <div class="ds-flex ds-items-center ds-gap-3 ds-mb-4">
+            <div style="font-size: 36px;">📝</div>
+            <div>
+                <span class="ds-eyebrow" style="color: var(--ds-state-info);">Track A</span>
+                <h2 class="ds-mt-0" style="color: var(--ds-state-info);">Knowledge Quiz</h2>
+            </div>
+        </div>
+        <p>Multiple-choice and open-ended questions covering CI/CD theory, Git, Docker, Agile and best practices.</p>
+        <p class="ds-text-muted" style="font-size: var(--ds-fs-small);">
+            <strong>{{ quiz_count }}</strong> questions available.
+            Each one gives instant feedback with an explanation.
+        </p>
+        <div class="action-container" style="justify-content: flex-start; margin-top: var(--ds-space-4);">
+            <a href="{{ url_for('exercise.exercise', track='quiz') }}" class="ds-btn ds-btn-blue">Start the quiz →</a>
+        </div>
+    </article>
+
+    <article class="ds-card" style="flex:1; min-width:280px; border-left: 4px solid var(--ds-state-success);">
+        <div class="ds-flex ds-items-center ds-gap-3 ds-mb-4">
+            <div style="font-size: 36px;">💻</div>
+            <div>
+                <span class="ds-eyebrow" style="color: var(--ds-state-success);">Track B</span>
+                <h2 class="ds-mt-0 ds-text-success">Code Workshop</h2>
+            </div>
+        </div>
+        <p>Write real Python in the VS Code editor, run automated tests, then <strong>write your own unit tests</strong> to verify your work.</p>
+        <p class="ds-text-muted" style="font-size: var(--ds-fs-small);">
+            <strong>{{ code_count }}</strong> coding challenges available.
+            Your code is saved and reviewable by lecturers.
+        </p>
+        <div class="action-container" style="justify-content: flex-start; margin-top: var(--ds-space-4);">
+            <a href="{{ url_for('exercise.exercise', track='code') }}" class="ds-btn ds-btn-mint">Start coding →</a>
+        </div>
+    </article>
+</div>
+
+<div class="ds-card ds-mt-6" style="text-align:center;">
+    <p class="ds-text-muted" style="margin: 0;">Want everything at once?</p>
+    <a href="{{ url_for('exercise.exercise') }}" class="ds-btn ds-btn-outline ds-mt-2">Practice all {{ total_count }} questions</a>
+</div>
+{% endblock %}
