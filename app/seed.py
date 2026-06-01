@@ -71,12 +71,57 @@ def get_seed_modules():
     ]
 
 
+def _seed_default_admin():
+    from werkzeug.security import generate_password_hash
+
+    from app.models import AdminProfile, User, db
+
+    admin = User.query.filter_by(role="admin").first()
+    if admin:
+        return admin
+
+    admin_email = "admin@ante.local"
+    existing = User.query.filter_by(email=admin_email).first()
+    if existing:
+        existing.role = "admin"
+        existing.is_active = True
+        db.session.flush()
+        admin_user = existing
+    else:
+        admin_user = User(
+            username="admin",
+            full_name="System Administrator",
+            email=admin_email,
+            password_hash=generate_password_hash("Admin#12345"),
+            role="admin",
+            is_active=True,
+        )
+        db.session.add(admin_user)
+        db.session.flush()
+
+    profile = AdminProfile.query.filter_by(user_id=admin_user.id).first()
+    if not profile:
+        db.session.add(
+            AdminProfile(user_id=admin_user.id, admin_id="ADMIN-001", scope="full")
+        )
+    return admin_user
+
+
 def bootstrap_database():
     """
     Initializes modules and question bank records if they do not exist.
     Safe to call multiple times.
     """
-    from app.models import Module, Question, User, db
+    from app.models import Module, Question, TheoryContent, User, db
+    from app.services.code_runner_service import (
+        default_compiler_label,
+        default_environment_label,
+        normalize_language,
+    )
+    from app.services.settings_service import ensure_defaults
+
+    ensure_defaults()
+    _seed_default_admin()
 
     modules_map = {}
     for module_data in get_seed_modules():
@@ -87,13 +132,39 @@ def bootstrap_database():
             db.session.flush()
         modules_map[module.name.lower()] = module
 
+    lecturer = User.query.filter_by(role="lecturer").first()
+    created_by = lecturer.id if lecturer else None
+
     question_count = Question.query.count()
+    for module in modules_map.values():
+        if module.name.lower() not in {"intro", "pipeline"}:
+            continue
+        existing_theory = TheoryContent.query.filter_by(module_id=module.id).first()
+        if not existing_theory:
+            default_explanation = (
+                "Core foundations that students should understand before progressing."
+                if module.name.lower() == "intro"
+                else "Stage-by-stage operational flow from commit to production."
+            )
+            default_examples = (
+                "Example: small feature branch merged with CI checks before release."
+                if module.name.lower() == "intro"
+                else "Example: Code -> Build -> Test -> Deploy with automated quality gates."
+            )
+            db.session.add(
+                TheoryContent(
+                    module_id=module.id,
+                    headline=f"{module.name} Theory Highlights",
+                    explanation=default_explanation,
+                    examples=default_examples,
+                    updated_by=created_by,
+                )
+            )
+
     if question_count > 0:
         db.session.commit()
         return
 
-    lecturer = User.query.filter_by(role="lecturer").first()
-    created_by = lecturer.id if lecturer else None
     exercise_module = modules_map.get("exercise")
     if not exercise_module:
         db.session.commit()
@@ -109,6 +180,7 @@ def bootstrap_database():
                 {"inputs": [10, 20], "expected": 30},
             ]
 
+        code_lang = normalize_language("python")
         question_row = Question(
             id=q["id"],
             question_text=q["content"],
@@ -120,6 +192,13 @@ def bootstrap_database():
             module_id=exercise_module.id,
             starter_code=starter_code,
             test_cases_json=json.dumps(test_cases) if test_cases else None,
+            language=code_lang if q["type"] == QuestionType.CODE.value else None,
+            execution_environment=(
+                default_environment_label(code_lang) if q["type"] == QuestionType.CODE.value else None
+            ),
+            compiler_info=(
+                default_compiler_label(code_lang) if q["type"] == QuestionType.CODE.value else None
+            ),
             is_active=True,
             created_by=created_by,
         )

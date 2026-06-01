@@ -56,5 +56,26 @@ def ensure_schema_compatibility() -> None:
         columns = _table_columns("exercise_attempts")
         if "answer" not in columns:
             db.session.execute(text("ALTER TABLE exercise_attempts ADD COLUMN answer TEXT"))
+        if "unit_test_code" not in columns:
+            db.session.execute(text("ALTER TABLE exercise_attempts ADD COLUMN unit_test_code TEXT"))
+        if "unit_test_passed" not in columns:
+            db.session.execute(
+                text("ALTER TABLE exercise_attempts ADD COLUMN unit_test_passed BOOLEAN DEFAULT 0")
+            )
+        if "unit_test_output" not in columns:
+            db.session.execute(text("ALTER TABLE exercise_attempts ADD COLUMN unit_test_output TEXT"))
+        if "lecturer_review" not in columns:
+            db.session.execute(text("ALTER TABLE exercise_attempts ADD COLUMN lecturer_review TEXT"))
+        if "reviewed_by" not in columns:
+            db.session.execute(text("ALTER TABLE exercise_attempts ADD COLUMN reviewed_by INTEGER"))
+        if "reviewed_at" not in columns:
+            db.session.execute(text("ALTER TABLE exercise_attempts ADD COLUMN reviewed_at DATETIME"))
+
+    if _table_exists("users"):
+        columns = _table_columns("users")
+        if "is_active" not in columns:
+            db.session.execute(
+                text("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT 1")
+            )
 
     db.session.commit()
