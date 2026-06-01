@@ -95,12 +95,11 @@ def get_or_create_question_order() -> List[int]:
     current = session.get(_session_question_order_key())
     if not current:
         return initialize_question_order()
-    # keep only ids that still exist and active
+    # Pick up newly added / removed / deactivated questions automatically.
     active_ids = {q.id for q in get_exercise_questions()}
-    filtered = [qid for qid in current if qid in active_ids]
-    if not filtered or len(filtered) != len(current):
+    if set(current) != active_ids:
         return initialize_question_order()
-    return filtered
+    return current
 
 
 def mark_question_seen(question_id: int) -> None:
