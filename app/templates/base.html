@@ -3,39 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CI/CD Learning Platform</title>
+    <title>{{ system_name or 'CI/CD Learning Platform' }}</title>
+    {# Design system tokens load first so style.css and inline styles can override safely. #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='design-system.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav>
-        <div class="nav-brand">DevOpsEd</div>
-        <div class="nav-links">
+    {# Page-level decorative blobs that "blend" the background per spec.
+       Pages may add their own ds-blob elements on top. #}
+    <span class="ds-bg-decor ds-bg-decor--purple" aria-hidden="true"></span>
+    <span class="ds-bg-decor ds-bg-decor--mint" aria-hidden="true"></span>
+    <span class="ds-bg-decor ds-bg-decor--blue" aria-hidden="true"></span>
+
+    {% set is_admin = session.get('role') == 'admin' %}
+    {% set is_lecturer = session.get('role') == 'lecturer' and not session.get('demo_mode') %}
+    {% set is_student = session.get('role') == 'student' %}
+    <nav class="ds-nav">
+        <a class="nav-brand ds-nav-brand" href="/">DevOpsEd</a>
+        <div class="nav-links ds-nav-links">
             <a href="/">Home</a>
-            <a href="/intro">Intro</a>
-            <a href="/pipeline">Pipeline</a>
-            <a href="/exercise">Exercise</a>
-            {% if session.get('user_id') %}
-                <a href="/progress" style="color:var(--text-primary); border-bottom: 2px solid var(--accent-color);">Dashboard</a>
-                <span style="color:var(--text-secondary); margin-left:1rem;">Hello, {{ session.get('user_name') }}</span>
-                <a href="/logout" style="margin-left:1rem; color:#f87171;">Logout</a>
+            {% if not is_admin %}
+                <a href="/learning-path">Path</a>
+                <a href="/intro">Intro</a>
+                <a href="/pipeline">Pipeline</a>
+                <a href="/exercise">Exercise</a>
+            {% endif %}
+            {% if session.get('user_id') or session.get('demo_mode') %}
+                {% if is_lecturer %}
+                    <a href="/lecturer/questions">Question Bank</a>
+                    <a href="/lecturer/theory">Theory Content</a>
+                    <a href="/lecturer/submissions">Submissions</a>
+                    <a href="/lecturer/dashboard">Lecturer Dashboard</a>
+                {% endif %}
+                {% if is_admin %}
+                    <a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+                    <a href="{{ url_for('admin.users') }}">Users</a>
+                    <a href="{{ url_for('admin.modules') }}">Modules</a>
+                    <a href="{{ url_for('admin.audit') }}">Audit</a>
+                    <a href="{{ url_for('admin.reports') }}">Reports</a>
+                    <a href="{{ url_for('admin.settings_view') }}">Settings</a>
+                {% endif %}
+                {% if is_student %}
+                    <a href="{{ url_for('certificate.certificate') }}">Certificate</a>
+                {% endif %}
+                {% if not is_admin %}
+                    <a href="/progress" class="is-active">Dashboard</a>
+                {% endif %}
+                <span class="ds-pill ds-pill-mint" style="margin-left:0.25rem; font-size: 15px; padding: 8px 16px;">Hello, {{ session.get('user_name') }}</span>
+                {% if session.get('demo_mode') %}
+                    <a href="/demo-view">Demo View</a>
+                {% endif %}
+                <a href="/logout" style="color: var(--ds-state-error);">Logout</a>
             {% else %}
                 <a href="/login">Login</a>
                 <a href="/register">Register</a>
             {% endif %}
         </div>
     </nav>
+
+    {% if maintenance_mode_on and is_admin %}
+    <div role="status" style="background: var(--ds-state-progress); color: var(--ds-text-dark); padding: 10px 24px; text-align: center; font-weight: var(--ds-weight-title);">
+        Maintenance mode is currently enabled. Only administrators can access the platform.
+    </div>
+    {% endif %}
+
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
-            <div style="margin-bottom: 1.5rem;">
+            <div class="ds-stack-md" style="margin-bottom: 1.5rem;">
             {% for category, message in messages %}
-              {% if category == 'error' %}
-              <div style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; background-color: #7f1d1d; color: #fff;">
-              {% else %}
-              <div style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; background-color: #14532d; color: #fff;">
-              {% endif %}
-                  {{ message }}
+              {% set kind = 'error' if category == 'error' else ('warning' if category == 'warning' else 'success') %}
+              {% set icon = '!' if kind == 'error' else ('i' if kind == 'warning' else '✓') %}
+              {% set title = 'Action required' if kind == 'error' else ('Heads up' if kind == 'warning' else 'Success') %}
+              <div class="ds-alert ds-alert--{{ kind }}" role="alert">
+                  <div class="ds-alert__icon" aria-hidden="true">{{ icon }}</div>
+                  <div class="ds-alert__body">
+                      <h3 class="ds-alert__title">{{ title }}</h3>
+                      <p class="ds-alert__message">{{ message }}</p>
+                  </div>
               </div>
             {% endfor %}
             </div>
