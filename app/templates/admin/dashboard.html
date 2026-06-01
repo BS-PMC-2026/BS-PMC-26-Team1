@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Administrator Dashboard</h1>
+    <p class="subtitle">Platform health, recent activity, and quick navigation.</p>
+</div>
+
+<div class="ds-row" style="margin-bottom: var(--ds-space-6);">
+    <div class="ds-card ds-text-center" style="flex:1; min-width:180px;">
+        <p class="ds-eyebrow ds-mb-2">Students</p>
+        <h2 class="ds-stat-number ds-text-primary">{{ stats.students }}</h2>
+        <p class="ds-text-muted ds-mt-2" style="margin-bottom:0;">Active learners</p>
+    </div>
+    <div class="ds-card ds-text-center" style="flex:1; min-width:180px;">
+        <p class="ds-eyebrow ds-mb-2" style="color: var(--ds-state-info);">Lecturers</p>
+        <h2 class="ds-stat-number" style="color: var(--ds-state-info);">{{ stats.lecturers }}</h2>
+        <p class="ds-text-muted ds-mt-2" style="margin-bottom:0;">Teaching staff</p>
+    </div>
+    <div class="ds-card ds-text-center" style="flex:1; min-width:180px;">
+        <p class="ds-eyebrow ds-mb-2" style="color: var(--ds-state-progress);">Admins</p>
+        <h2 class="ds-stat-number" style="color: var(--ds-state-progress);">{{ stats.admins }}</h2>
+        <p class="ds-text-muted ds-mt-2" style="margin-bottom:0;">Platform admins</p>
+    </div>
+    <div class="ds-card ds-text-center" style="flex:1; min-width:180px;">
+        <p class="ds-eyebrow ds-mb-2">Attempts</p>
+        <h2 class="ds-stat-number ds-text-primary">{{ stats.attempts }}</h2>
+        <p class="ds-text-muted ds-mt-2" style="margin-bottom:0;">Total exercise attempts</p>
+    </div>
+    <div class="ds-card ds-text-center" style="flex:1; min-width:180px;">
+        <p class="ds-eyebrow ds-mb-2" style="color: var(--ds-state-success);">Success</p>
+        <h2 class="ds-stat-number ds-text-success">{{ stats.success_average }}%</h2>
+        <p class="ds-text-muted ds-mt-2" style="margin-bottom:0;">Overall success average</p>
+    </div>
+</div>
+
+<div class="action-container" style="justify-content:flex-start; margin-bottom: var(--ds-space-5);">
+    <a href="{{ url_for('admin.users') }}" class="ds-btn ds-btn-purple">Manage Users</a>
+    <a href="{{ url_for('admin.modules') }}" class="ds-btn ds-btn-mint">Manage Modules</a>
+    <a href="{{ url_for('admin.settings_view') }}" class="ds-btn ds-btn-blue">System Settings</a>
+    <a href="{{ url_for('admin.audit') }}" class="ds-btn ds-btn-yellow">Audit Log</a>
+    <a href="{{ url_for('admin.reports') }}" class="ds-btn ds-btn-primary">Reports</a>
+</div>
+
+<div class="ds-card" style="margin-bottom: var(--ds-space-6);">
+    <h2 class="ds-mt-0">Activity (last 7 days)</h2>
+    {% if activity %}
+        <table class="ds-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Exercise attempts</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in activity %}
+                <tr>
+                    <td>{{ row.date }}</td>
+                    <td>{{ row.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="ds-alert ds-alert--info" role="status">
+            <div class="ds-alert__icon" aria-hidden="true">i</div>
+            <div class="ds-alert__body">
+                <h3 class="ds-alert__title">No activity recorded yet</h3>
+                <p class="ds-alert__message">Daily exercise activity will appear here as students engage with the platform.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<div class="ds-card">
+    <h2 class="ds-mt-0">Recent audit activity</h2>
+    {% if audit_entries %}
+        <table class="ds-table">
+            <thead>
+                <tr>
+                    <th>When</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Target</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in audit_entries %}
+                <tr>
+                    <td>{{ entry.created_at.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+                    <td>{{ entry.user.full_name if entry.user else 'system' }}</td>
+                    <td><span class="ds-pill">{{ entry.action }}</span></td>
+                    <td>{{ entry.target_type or '-' }}{% if entry.target_id %} #{{ entry.target_id }}{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="ds-mt-4" style="margin-bottom:0;">
+            <a href="{{ url_for('admin.audit') }}" class="ds-text-primary" style="font-weight: var(--ds-weight-title); text-decoration: none;">View full audit log →</a>
+        </p>
+    {% else %}
+        <div class="ds-alert ds-alert--info" role="status">
+            <div class="ds-alert__icon" aria-hidden="true">i</div>
+            <div class="ds-alert__body">
+                <h3 class="ds-alert__title">No audit entries yet</h3>
+                <p class="ds-alert__message">Audited events such as logins, registrations and admin actions will surface here.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
