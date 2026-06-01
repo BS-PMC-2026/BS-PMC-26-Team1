@@ -3,90 +3,291 @@
 {% block content %}
 <div class="module-header">
     <h1>Visual CI/CD Pipeline</h1>
-    <p class="subtitle">Understand the end-to-end flow of modern deployments.</p>
+    <p class="subtitle">Click each stage to learn what happens, or press <strong>Run Pipeline</strong> to watch a full deployment.</p>
 </div>
 
 {% if theory_content %}
-<div class="card" style="max-width: 900px; margin: 1rem auto 0 auto; border-left: 4px solid #22c55e;">
-    <h2 style="margin-top: 0; color: #86efac;">{{ theory_content.headline }}</h2>
-    <p style="line-height: 1.8; color: var(--text-secondary); white-space: pre-line;">{{ theory_content.explanation }}</p>
-    <div style="margin-top: 1rem; padding: 1rem; border-radius: 10px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);">
-        <p style="margin: 0; color: var(--text-secondary); white-space: pre-line;"><strong style="color: var(--text-primary);">Examples:</strong> {{ theory_content.examples }}</p>
+<div class="ds-card" style="max-width: 920px; margin: 0 auto var(--ds-space-5); border-left: 4px solid var(--ds-state-success);">
+    <h2 class="ds-mt-0 ds-text-primary">{{ theory_content.headline }}</h2>
+    <p style="white-space: pre-line;">{{ theory_content.explanation }}</p>
+    <div style="margin-top: var(--ds-space-4); padding: var(--ds-space-4); border-radius: var(--ds-radius-input); background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);">
+        <p style="margin: 0; white-space: pre-line;">
+            <strong class="ds-text-success">Examples:</strong> {{ theory_content.examples }}
+        </p>
     </div>
 </div>
 {% endif %}
 
-<div class="pipeline-container" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem;">
-    <div class="card pipeline-stage" role="button" tabindex="0" data-stage="code" onclick="showExplanation('code')" onkeypress="triggerStage(event, 'code')" style="cursor: pointer; width: 20%; min-width: 200px; text-align: center; border-top: 4px solid #3b82f6; transition: transform 0.2s;">
-        <h2 style="color: #3b82f6;">1. Code</h2>
-        <p style="font-size: 0.9rem;">Developers commit their changes.</p>
-    </div>
-    
-    <div style="align-self: center; color: var(--text-secondary); font-size: 1.5rem;">➔</div>
+{# Live runner controls #}
+<div class="ds-flex ds-justify-center ds-gap-3 ds-mb-5" style="flex-wrap: wrap;">
+    <button id="runPipelineBtn" class="ds-btn ds-btn-primary ds-btn-lg" onclick="runFullPipeline()">▶ Run Pipeline</button>
+    <button class="ds-btn ds-btn-outline" onclick="resetPipeline()">Reset</button>
+</div>
 
-    <div class="card pipeline-stage" role="button" tabindex="0" data-stage="build" onclick="showExplanation('build')" onkeypress="triggerStage(event, 'build')" style="cursor: pointer; width: 20%; min-width: 200px; text-align: center; border-top: 4px solid #f59e0b; transition: transform 0.2s;">
-        <h2 style="color: #f59e0b;">2. Build</h2>
-        <p style="font-size: 0.9rem;">Source code is compiled.</p>
-    </div>
-
-    <div style="align-self: center; color: var(--text-secondary); font-size: 1.5rem;">➔</div>
-
-    <div class="card pipeline-stage" role="button" tabindex="0" data-stage="test" onclick="showExplanation('test')" onkeypress="triggerStage(event, 'test')" style="cursor: pointer; width: 20%; min-width: 200px; text-align: center; border-top: 4px solid #10b981; transition: transform 0.2s;">
-        <h2 style="color: #10b981;">3. Test</h2>
-        <p style="font-size: 0.9rem;">Automated tests run.</p>
+<div class="ds-pipeline" id="pipeline">
+    <div class="ds-pipeline-stage" role="button" tabindex="0" data-stage="code"
+         onclick="showExplanation('code')" onkeypress="triggerStage(event, 'code')">
+        <div class="ds-pipeline-step-num">1</div>
+        <h2 class="ds-mt-0">Code</h2>
+        <p class="ds-text-muted" style="margin-bottom:0;">Developers commit their changes.</p>
+        <div class="stage-status" data-stage-status="code">idle</div>
     </div>
 
-    <div style="align-self: center; color: var(--text-secondary); font-size: 1.5rem;">➔</div>
+    <div class="ds-pipeline-arrow" aria-hidden="true">→</div>
 
-    <div class="card pipeline-stage" role="button" tabindex="0" data-stage="deploy" onclick="showExplanation('deploy')" onkeypress="triggerStage(event, 'deploy')" style="cursor: pointer; width: 20%; min-width: 200px; text-align: center; border-top: 4px solid #8b5cf6; transition: transform 0.2s;">
-        <h2 style="color: #8b5cf6;">4. Deploy</h2>
-        <p style="font-size: 0.9rem;">Artifacts go to production.</p>
+    <div class="ds-pipeline-stage" role="button" tabindex="0" data-stage="build"
+         onclick="showExplanation('build')" onkeypress="triggerStage(event, 'build')">
+        <div class="ds-pipeline-step-num" style="background: var(--ds-btn-orange);">2</div>
+        <h2 class="ds-mt-0">Build</h2>
+        <p class="ds-text-muted" style="margin-bottom:0;">Source code is compiled.</p>
+        <div class="stage-status" data-stage-status="build">idle</div>
+    </div>
+
+    <div class="ds-pipeline-arrow" aria-hidden="true">→</div>
+
+    <div class="ds-pipeline-stage" role="button" tabindex="0" data-stage="test"
+         onclick="showExplanation('test')" onkeypress="triggerStage(event, 'test')">
+        <div class="ds-pipeline-step-num" style="background: var(--ds-state-success);">3</div>
+        <h2 class="ds-mt-0">Test</h2>
+        <p class="ds-text-muted" style="margin-bottom:0;">Automated tests run.</p>
+        <div class="stage-status" data-stage-status="test">idle</div>
+    </div>
+
+    <div class="ds-pipeline-arrow" aria-hidden="true">→</div>
+
+    <div class="ds-pipeline-stage" role="button" tabindex="0" data-stage="deploy"
+         onclick="showExplanation('deploy')" onkeypress="triggerStage(event, 'deploy')">
+        <div class="ds-pipeline-step-num" style="background: var(--ds-btn-purple-strong);">4</div>
+        <h2 class="ds-mt-0">Deploy</h2>
+        <p class="ds-text-muted" style="margin-bottom:0;">Artifacts go to production.</p>
+        <div class="stage-status" data-stage-status="deploy">idle</div>
     </div>
 </div>
 
-<div id="explanation-box" class="card" style="display: none; max-width: 800px; margin: 2rem auto; text-align: center; border: 2px solid #334155;">
-    <h2 id="explanation-title" style="margin-top: 0;"></h2>
-    <p id="explanation-text" style="font-size: 1.1rem; color: var(--text-secondary); line-height: 1.6;"></p>
+{# Terminal-style live log #}
+<div id="pipelineTerminal" style="max-width: 920px; margin: var(--ds-space-6) auto 0; border-radius: var(--ds-radius-input); border: 1px solid #333; overflow: hidden; background: #1e1e1e; box-shadow: var(--ds-shadow-card);">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 14px; background:#252526; border-bottom:1px solid #333; font-family: monospace; font-size:13px; color:#cccccc;">
+        <div style="display:flex; gap:6px; align-items:center;">
+            <span style="width:12px; height:12px; border-radius:50%; background:#ff5f56; display:inline-block;"></span>
+            <span style="width:12px; height:12px; border-radius:50%; background:#ffbd2e; display:inline-block;"></span>
+            <span style="width:12px; height:12px; border-radius:50%; background:#27c93f; display:inline-block;"></span>
+            <span style="margin-left:12px;">pipeline.log</span>
+        </div>
+        <span id="pipelineState" style="opacity:0.7;">idle</span>
+    </div>
+    <pre id="pipelineLog" style="margin:0; padding: var(--ds-space-4); background:#1e1e1e; color:#9cdcfe; font-family: 'Menlo','Monaco','Consolas',monospace; font-size: 13px; line-height: 1.55; white-space: pre-wrap; min-height: 220px; max-height: 360px; overflow: auto;">$ awaiting input...</pre>
 </div>
+
+<div id="explanation-box" class="ds-card" style="display: none; max-width: 820px; margin: var(--ds-space-6) auto 0; text-align: center;">
+    <h2 id="explanation-title" class="ds-mt-0 ds-text-primary"></h2>
+    <p id="explanation-text" style="margin-bottom:0;"></p>
+</div>
+
+{# Deeper learning content -- the stage-by-stage tour #}
+<section class="ds-card" style="margin-top: var(--ds-space-7);">
+    <div class="ds-flex ds-items-center ds-gap-3 ds-mb-4">
+        <span class="ds-floating-chip" style="position:static; background: var(--ds-primary); color: white; width: 44px; height: 44px; font-size: 18px;">📘</span>
+        <div>
+            <span class="ds-eyebrow">Deep dive</span>
+            <h2 class="ds-mt-0">What really happens behind each stage</h2>
+        </div>
+    </div>
+
+    <div class="ds-row" style="margin-top: var(--ds-space-4);">
+        <div class="ds-card" style="flex:1; min-width: 240px; border-left: 4px solid var(--ds-state-info);">
+            <h3 class="ds-mt-0" style="color: var(--ds-state-info);">1. Code &amp; Commit</h3>
+            <ul style="line-height: 1.85; padding-left: 1.25rem; margin: 0;">
+                <li>Branch from <code>main</code>.</li>
+                <li>Pre-commit hooks: lint, format, basic checks.</li>
+                <li>Small, focused commits with clear messages.</li>
+                <li>Open a Pull Request to trigger CI.</li>
+            </ul>
+        </div>
+        <div class="ds-card" style="flex:1; min-width: 240px; border-left: 4px solid var(--ds-btn-orange);">
+            <h3 class="ds-mt-0" style="color: var(--ds-btn-orange);">2. Build</h3>
+            <ul style="line-height: 1.85; padding-left: 1.25rem; margin: 0;">
+                <li>Install dependencies (pip, npm, maven…).</li>
+                <li>Compile sources / transpile JS / TS.</li>
+                <li>Package artifact (Docker image, jar, wheel).</li>
+                <li>Push to artifact registry with a unique version tag.</li>
+            </ul>
+        </div>
+        <div class="ds-card" style="flex:1; min-width: 240px; border-left: 4px solid var(--ds-state-success);">
+            <h3 class="ds-mt-0 ds-text-success">3. Test</h3>
+            <ul style="line-height: 1.85; padding-left: 1.25rem; margin: 0;">
+                <li>Unit tests (fast, isolated).</li>
+                <li>Integration tests (DB, queues, services).</li>
+                <li>Security scans (SAST, dependency CVEs).</li>
+                <li>Coverage and quality gates.</li>
+            </ul>
+        </div>
+        <div class="ds-card" style="flex:1; min-width: 240px; border-left: 4px solid var(--ds-btn-purple-strong);">
+            <h3 class="ds-mt-0" style="color: var(--ds-btn-purple-strong);">4. Deploy</h3>
+            <ul style="line-height: 1.85; padding-left: 1.25rem; margin: 0;">
+                <li>Promote to staging, run smoke tests.</li>
+                <li>Blue/green or canary roll-out to production.</li>
+                <li>Health checks, alerts, automatic rollback.</li>
+                <li>Tag release in source control.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+{# Best practices #}
+<section class="ds-card" style="margin-top: var(--ds-space-6); border-left: 4px solid var(--ds-state-progress);">
+    <span class="ds-eyebrow" style="color: var(--ds-state-progress);">Best Practices</span>
+    <h2 class="ds-mt-2" style="color: var(--ds-state-progress);">10 habits of healthy pipelines</h2>
+    <ol style="line-height: 2; padding-left: 1.25rem; margin: var(--ds-space-3) 0 0;">
+        <li>Keep <strong>main</strong> always deployable.</li>
+        <li>Commit small, review often.</li>
+        <li>Make every step <strong>idempotent</strong> – running twice should be safe.</li>
+        <li>Fail loudly and fast – stop the pipeline at the first red flag.</li>
+        <li>Use <strong>infrastructure as code</strong> (Terraform, Ansible) for environments.</li>
+        <li>Cache dependencies between runs to keep CI fast.</li>
+        <li>Run security scans on every PR, not once a quarter.</li>
+        <li>Treat flaky tests as bugs – fix or quarantine immediately.</li>
+        <li>Automate rollback. Never recover by hand under pressure.</li>
+        <li>Observe everything – metrics, logs, traces – from day one.</li>
+    </ol>
+</section>
+
+{# Common tools cheat-sheet #}
+<section class="ds-card" style="margin-top: var(--ds-space-6); border-left: 4px solid var(--ds-btn-purple);">
+    <span class="ds-eyebrow">Cheat-sheet</span>
+    <h2 class="ds-mt-2">Tools you will meet in the wild</h2>
+    <table class="ds-table ds-mt-3">
+        <thead>
+            <tr><th>Stage</th><th>Tools</th><th>Used for</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Code</td><td>Git, GitHub, GitLab, Bitbucket</td><td>Source control, PR review</td></tr>
+            <tr><td>Build</td><td>GitHub Actions, Jenkins, GitLab CI, CircleCI</td><td>Compile and package</td></tr>
+            <tr><td>Test</td><td>pytest, jest, JUnit, Selenium, Cypress</td><td>Unit / integration / end-to-end</td></tr>
+            <tr><td>Artifact</td><td>Docker Hub, Nexus, JFrog, ECR</td><td>Versioned build outputs</td></tr>
+            <tr><td>Deploy</td><td>Kubernetes, Helm, Terraform, Ansible</td><td>Roll out artifacts</td></tr>
+            <tr><td>Observe</td><td>Prometheus, Grafana, ELK, Datadog</td><td>Metrics, logs, alerts</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<style>
+    .ds-pipeline-stage { position: relative; transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease; }
+    .ds-pipeline-stage.stage-running {
+        transform: translateY(-6px) scale(1.03);
+        border-color: var(--ds-state-progress);
+        box-shadow: 0 0 24px rgba(255, 232, 103, 0.65);
+        animation: stagePulse 1.1s ease-in-out infinite;
+    }
+    .ds-pipeline-stage.stage-passed {
+        transform: translateY(-2px);
+        border-color: var(--ds-state-success);
+        box-shadow: 0 0 18px rgba(16, 185, 129, 0.55);
+    }
+    .ds-pipeline-stage.stage-failed {
+        border-color: var(--ds-state-error);
+        box-shadow: 0 0 18px rgba(255, 67, 67, 0.55);
+        animation: shake 0.4s ease;
+    }
+    .stage-status {
+        margin-top: var(--ds-space-2);
+        font-size: var(--ds-fs-small);
+        font-weight: var(--ds-weight-title);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255,255,255,0.6);
+    }
+    .ds-pipeline-stage.stage-running .stage-status { color: var(--ds-state-progress); }
+    .ds-pipeline-stage.stage-passed .stage-status { color: var(--ds-state-success); }
+    .ds-pipeline-stage.stage-failed .stage-status { color: var(--ds-state-error); }
+    @keyframes stagePulse {
+        0%, 100% { box-shadow: 0 0 16px rgba(255, 232, 103, 0.45); }
+        50%      { box-shadow: 0 0 32px rgba(255, 232, 103, 0.85); }
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25%      { transform: translateX(-6px); }
+        75%      { transform: translateX(6px); }
+    }
+</style>
 
 <script>
+    const PIPELINE_ORDER = ['code', 'build', 'test', 'deploy'];
+
     const explanations = {
-        'code': {
-            title: 'Code & Commit',
-            text: 'Developers write code on their local machines. They use version control systems like Git to track changes. When a feature or fix is ready, they commit and push their code to a central repository like GitHub or GitLab.'
-        },
-        'build': {
-            title: 'Build Process',
-            text: 'The CI server (like GitHub Actions or Jenkins) detects the new code. It pulls the code, resolves and installs all required dependencies, compiles the application if necessary, and packages it into a deployable artifact (e.g., a Docker image or a .jar file).'
-        },
-        'test': {
-            title: 'Automated Testing',
-            text: 'The newly built application is subjected to rigorous automated testing. This includes unit tests, integration tests, and security scans. If any test fails, the pipeline stops and the developers are notified immediately.'
-        },
-        'deploy': {
-            title: 'Deployment',
-            text: 'Once tests pass, the artifact is deployed to a staging or production environment. In Continuous Delivery, this is a manual click. In Continuous Deployment, it is fully automated. Users can now access the new features!'
-        }
+        'code':   { title: '1. Code & Commit',  text: 'Developers write code on their local machines. They use Git to track changes. When a feature or fix is ready, they commit and push to a central repository.' },
+        'build':  { title: '2. Build Process',  text: 'The CI server (GitHub Actions, Jenkins, GitLab CI…) detects the new code, pulls it, resolves dependencies, compiles the app, and packages it into a deployable artifact such as a Docker image.' },
+        'test':   { title: '3. Automated Testing', text: 'The newly built application is exercised by unit tests, integration tests, and security scans. If any test fails, the pipeline stops and developers are notified instantly.' },
+        'deploy': { title: '4. Deployment', text: 'Once tests pass, the artifact is promoted to staging and then production. Blue/green or canary deployments minimise risk; health checks trigger automatic rollback if needed.' }
     };
+
+    const runnerScripts = {
+        code:   [
+            '$ git add .',
+            '$ git commit -m "Implement new feature"',
+            '$ git push origin feature/login',
+            '✓ Pushed 3 commits to origin/feature/login'
+        ],
+        build:  [
+            '$ docker build -t app:1.4.2 .',
+            'Step 1/8 : FROM python:3.12-slim',
+            'Step 8/8 : CMD ["python", "app.py"]',
+            '✓ Built image app:1.4.2 (218 MB)'
+        ],
+        test:   [
+            '$ pytest -q',
+            '.................. [100%]',
+            '17 passed in 4.83s',
+            '$ bandit -r app/',
+            '✓ Security scan clean'
+        ],
+        deploy: [
+            '$ kubectl set image deploy/app app=app:1.4.2',
+            'deployment.apps/app image updated',
+            '$ kubectl rollout status deploy/app',
+            'deployment "app" successfully rolled out',
+            '🚀 Deployed to production'
+        ]
+    };
+
+    const STAGE_DURATION = 1300;
+    const LINE_INTERVAL = 220;
+
+    function logLine(line) {
+        const log = document.getElementById('pipelineLog');
+        log.textContent += '\n' + line;
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function setState(text) {
+        document.getElementById('pipelineState').textContent = text;
+    }
+
+    function resetPipeline() {
+        document.getElementById('pipelineLog').textContent = '$ awaiting input...';
+        setState('idle');
+        PIPELINE_ORDER.forEach(stage => {
+            const el = document.querySelector('[data-stage="' + stage + '"]');
+            el.classList.remove('stage-running', 'stage-passed', 'stage-failed');
+            el.querySelector('[data-stage-status]').textContent = 'idle';
+        });
+    }
 
     function showExplanation(stage) {
         const box = document.getElementById('explanation-box');
         const title = document.getElementById('explanation-title');
         const text = document.getElementById('explanation-text');
-
-        document.querySelectorAll('.pipeline-stage').forEach((node) => {
+        document.querySelectorAll('.ds-pipeline-stage').forEach((node) => {
+            node.classList.remove('is-active');
             node.classList.remove('active-stage');
         });
-        const activeNode = document.querySelector(`[data-stage="${stage}"]`);
+        const activeNode = document.querySelector('[data-stage="' + stage + '"]');
         if (activeNode) {
+            activeNode.classList.add('is-active');
             activeNode.classList.add('active-stage');
         }
-
         title.innerText = explanations[stage].title;
         text.innerText = explanations[stage].text;
         box.style.display = 'block';
-
-        // simple animation outline
         box.style.animation = 'none';
         setTimeout(() => box.style.animation = 'fadeIn 0.3s ease-in-out', 10);
     }
@@ -97,24 +298,51 @@
             showExplanation(stage);
         }
     }
-</script>
-<style>
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .pipeline-stage:hover {
-        transform: scale(1.05) !important;
-        background: rgba(255,255,255,0.05);
-    }
-    .pipeline-stage.active-stage {
-        transform: scale(1.05);
-        box-shadow: 0 0 0 2px rgba(79,70,229,0.75);
-        background: rgba(79,70,229,0.12);
-    }
-</style>
 
-<div class="action-container" style="margin-top: 4rem;">
-    <a href="/exercise" class="btn btn-primary">Take the Exercise</a>
+    async function animateStage(stage) {
+        const el = document.querySelector('[data-stage="' + stage + '"]');
+        el.classList.add('stage-running');
+        el.querySelector('[data-stage-status]').textContent = 'running…';
+        setState('running ' + stage);
+        logLine('\n──── ' + stage.toUpperCase() + ' ────');
+        const lines = runnerScripts[stage];
+        for (const line of lines) {
+            await sleep(LINE_INTERVAL);
+            logLine(line);
+        }
+        await sleep(STAGE_DURATION - LINE_INTERVAL * lines.length);
+        el.classList.remove('stage-running');
+        el.classList.add('stage-passed');
+        el.querySelector('[data-stage-status]').textContent = '✓ done';
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    async function runFullPipeline() {
+        const btn = document.getElementById('runPipelineBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Running…';
+        resetPipeline();
+        logLine('$ pipeline run --branch=main');
+        for (const stage of PIPELINE_ORDER) {
+            await animateStage(stage);
+        }
+        setState('✓ success');
+        logLine('\n✅ Pipeline finished successfully. New version is live.');
+        btn.disabled = false;
+        btn.textContent = '▶ Run Pipeline again';
+    }
+
+    (function verifyPipelineOrder() {
+        const dom = Array.from(document.querySelectorAll('#pipeline .ds-pipeline-stage'))
+            .map(n => n.dataset.stage);
+        const sameOrder = dom.length === PIPELINE_ORDER.length &&
+            dom.every((s, i) => s === PIPELINE_ORDER[i]);
+        if (!sameOrder) console.warn('Pipeline stages rendered in unexpected order:', dom);
+    })();
+</script>
+
+<div class="action-container" style="margin-top: var(--ds-space-7);">
+    <a href="/exercise" class="ds-btn ds-btn-primary ds-btn-lg">Take the Exercise →</a>
 </div>
 {% endblock %}
