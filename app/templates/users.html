@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>User Management</h1>
+    <p class="subtitle">Search, filter and administer accounts across all roles.</p>
+</div>
+
+<div class="ds-card" style="margin-bottom: var(--ds-space-5);">
+    <form method="GET" action="{{ url_for('admin.users') }}" class="ds-row" style="align-items:end;">
+        <div style="flex: 2; min-width: 220px;">
+            <label for="filter-q">Search</label>
+            <input id="filter-q" type="text" name="q" value="{{ search }}" placeholder="Name, email or username">
+        </div>
+        <div style="flex: 1; min-width: 160px;">
+            <label for="filter-role">Role</label>
+            <select id="filter-role" name="role">
+                <option value="" {% if not role_filter %}selected{% endif %}>All roles</option>
+                <option value="student" {% if role_filter == 'student' %}selected{% endif %}>Student</option>
+                <option value="lecturer" {% if role_filter == 'lecturer' %}selected{% endif %}>Lecturer</option>
+                <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Administrator</option>
+            </select>
+        </div>
+        <div style="flex: 1; min-width: 160px;">
+            <label for="filter-status">Status</label>
+            <select id="filter-status" name="status">
+                <option value="" {% if not status_filter %}selected{% endif %}>All</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        <div style="flex: 0 0 auto;">
+            <button type="submit" class="ds-btn ds-btn-primary">Apply filters</button>
+        </div>
+    </form>
+</div>
+
+<div class="ds-card">
+    {% if paged.rows %}
+    <table class="ds-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in paged.rows %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.full_name }}</td>
+                <td>{{ user.email }}</td>
+                <td><span class="ds-pill">{{ user.role.title() }}</span></td>
+                <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</td>
+                <td>
+                    {% if user.is_active %}
+                        <span class="ds-pill ds-pill-success">Active</span>
+                    {% else %}
+                        <span class="ds-pill ds-pill-error">Inactive</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="ds-flex ds-gap-2" style="flex-wrap: wrap;">
+                        {% if user.is_active %}
+                            <form method="POST" action="{{ url_for('admin.deactivate_user', user_id=user.id) }}" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="ds-btn ds-btn-sm ds-btn-yellow"
+                                        {% if user.id == session.get('user_id') %}disabled title="You cannot deactivate yourself"{% endif %}>
+                                    Deactivate
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="POST" action="{{ url_for('admin.activate_user', user_id=user.id) }}" style="margin:0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="ds-btn ds-btn-sm ds-btn-mint">Activate</button>
+                            </form>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('admin.reset_user_password', user_id=user.id) }}" style="margin:0;"
+                              onsubmit="return confirm('Generate a new temporary password for this user?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="ds-btn ds-btn-sm ds-btn-blue">Reset password</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="margin:0;"
+                              onsubmit="return confirm('Permanently delete {{ user.full_name }}? This cannot be undone.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="ds-btn ds-btn-sm" style="background: var(--ds-state-error); color: var(--ds-text-light);"
+                                    {% if user.id == session.get('user_id') %}disabled title="You cannot delete yourself"{% endif %}>
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="ds-flex ds-justify-between ds-items-center ds-mt-6" style="flex-wrap: wrap; gap: var(--ds-space-3);">
+        <p class="ds-text-muted" style="margin:0; font-size: var(--ds-fs-small);">
+            Showing {{ paged.rows|length }} of {{ paged.total }} users (page {{ paged.page }} of {{ paged.pages }}).
+        </p>
+        <div class="ds-flex ds-gap-2">
+            {% if paged.page > 1 %}
+                <a class="ds-btn ds-btn-sm ds-btn-outline"
+                   href="{{ url_for('admin.users', page=paged.page - 1, q=search, role=role_filter, status=status_filter) }}">Previous</a>
+            {% endif %}
+            {% if paged.page < paged.pages %}
+                <a class="ds-btn ds-btn-sm ds-btn-outline"
+                   href="{{ url_for('admin.users', page=paged.page + 1, q=search, role=role_filter, status=status_filter) }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="ds-alert ds-alert--info" role="status">
+        <div class="ds-alert__icon" aria-hidden="true">i</div>
+        <div class="ds-alert__body">
+            <h3 class="ds-alert__title">No users match the current filters</h3>
+            <p class="ds-alert__message">Adjust the search criteria or clear the filters to see every account.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

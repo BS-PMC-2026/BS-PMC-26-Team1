@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="ds-mb-4">
+    <a href="{{ url_for('lecturer.lecturer_submissions') }}" class="ds-btn ds-btn-outline ds-btn-sm">← Back to submissions</a>
+</div>
+
+<div class="module-header" style="text-align: left;">
+    <span class="ds-eyebrow">Submission #{{ submission.id }}</span>
+    <h1 class="ds-mt-2">Code review</h1>
+    <p class="subtitle">Submitted {{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }} UTC by {{ submission.user.full_name if submission.user else 'unknown' }}</p>
+</div>
+
+<div class="ds-row ds-mb-5">
+    <div class="ds-card" style="flex:1; min-width:280px;">
+        <p class="ds-eyebrow ds-mb-2">Student</p>
+        <h3 class="ds-mt-0">{{ submission.user.full_name if submission.user else 'unknown' }}</h3>
+        <p class="ds-text-muted" style="font-size: var(--ds-fs-small); margin-bottom:0;">
+            {{ submission.user.email if submission.user else '' }}
+        </p>
+    </div>
+    <div class="ds-card" style="flex:1; min-width:280px;">
+        <p class="ds-eyebrow ds-mb-2">Question</p>
+        <h3 class="ds-mt-0">#{{ submission.question_id }}</h3>
+        <p style="margin: 0;">{{ submission.question.question_text }}</p>
+    </div>
+    <div class="ds-card" style="flex:1; min-width:200px;">
+        <p class="ds-eyebrow ds-mb-2">Result</p>
+        {% if submission.is_correct %}
+            <span class="ds-pill ds-pill-success" style="font-size: 16px;">✓ Passed automated tests</span>
+        {% else %}
+            <span class="ds-pill ds-pill-error" style="font-size: 16px;">✗ Failed automated tests</span>
+        {% endif %}
+        <p class="ds-text-muted ds-mt-2" style="font-size: var(--ds-fs-small); margin-bottom:0;">
+            Score: <strong>{{ submission.score }}</strong> / 100
+        </p>
+        {% if submission.unit_test_code %}
+            <p class="ds-text-muted ds-mt-2" style="font-size: var(--ds-fs-small); margin-bottom:0;">
+                Self-written unit tests:
+                {% if submission.unit_test_passed %}
+                    <span class="ds-pill ds-pill-success">passed</span>
+                {% else %}
+                    <span class="ds-pill ds-pill-error">failed</span>
+                {% endif %}
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="ds-card ds-mb-5">
+    <h2 class="ds-mt-0">Student solution</h2>
+    <div style="border-radius: var(--ds-radius-input); border: 1px solid var(--ds-border-strong); overflow: hidden; background:#1e1e1e;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 14px; background:#252526; border-bottom:1px solid #333; font-family: monospace; font-size:13px; color:#cccccc;">
+            <span>● solution.py</span>
+            <span style="opacity:0.7;">Python (read-only)</span>
+        </div>
+        <div id="solutionViewer" style="height: 280px; width: 100%;"></div>
+    </div>
+    {% if submission.submitted_output %}
+    <h3 class="ds-mt-4">Runner output</h3>
+    <pre style="margin:0; padding: var(--ds-space-4); background:#1e1e1e; color:#d4d4d4; font-family: monospace; font-size: 13px; line-height: 1.55; white-space: pre-wrap; border-radius: var(--ds-radius-input); max-height: 220px; overflow:auto;">{{ submission.submitted_output }}</pre>
+    {% endif %}
+</div>
+
+{% if submission.unit_test_code %}
+<div class="ds-card ds-mb-5">
+    <h2 class="ds-mt-0">Student-written unit tests</h2>
+    <div style="border-radius: var(--ds-radius-input); border: 1px solid var(--ds-border-strong); overflow: hidden; background:#1e1e1e;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 14px; background:#252526; border-bottom:1px solid #333; font-family: monospace; font-size:13px; color:#cccccc;">
+            <span>● test_solution.py</span>
+            <span style="opacity:0.7;">Python (read-only)</span>
+        </div>
+        <div id="testsViewer" style="height: 200px; width: 100%;"></div>
+    </div>
+    {% if submission.unit_test_output %}
+    <h3 class="ds-mt-4">Unit-test runner output</h3>
+    <pre style="margin:0; padding: var(--ds-space-4); background:#1e1e1e; color:#d4d4d4; font-family: monospace; font-size: 13px; line-height: 1.55; white-space: pre-wrap; border-radius: var(--ds-radius-input);">{{ submission.unit_test_output }}</pre>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="ds-card">
+    <h2 class="ds-mt-0">Your review</h2>
+    {% if submission.lecturer_review %}
+    <div class="ds-alert ds-alert--success" role="status">
+        <div class="ds-alert__icon" aria-hidden="true">✓</div>
+        <div class="ds-alert__body">
+            <h3 class="ds-alert__title">Latest review</h3>
+            <p class="ds-alert__message" style="white-space: pre-line;">{{ submission.lecturer_review }}</p>
+            <p class="ds-text-muted ds-mt-2" style="font-size: var(--ds-fs-small); margin-bottom:0;">
+                Saved on {{ submission.reviewed_at.strftime('%Y-%m-%d %H:%M') }} UTC
+                {% if submission.reviewer %}by {{ submission.reviewer.full_name }}{% endif %}
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="POST" class="ds-flex-col ds-gap-3 ds-mt-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div>
+            <label for="review_text">Comment for the student</label>
+            <textarea id="review_text" name="review_text" rows="5" required maxlength="4000"
+                      placeholder="Praise what works, point out issues, suggest improvements…">{{ submission.lecturer_review or '' }}</textarea>
+        </div>
+        <div class="ds-flex ds-gap-3" style="flex-wrap: wrap;">
+            <button type="submit" class="ds-btn ds-btn-primary">Save review</button>
+            <a href="{{ url_for('lecturer.lecturer_submissions') }}" class="ds-btn ds-btn-outline">Back to list</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs/loader.js"></script>
+<script>
+(function () {
+    const solution = {{ (submission.answer or '') | tojson }};
+    const tests = {{ (submission.unit_test_code or '') | tojson }};
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+        monaco.editor.create(document.getElementById('solutionViewer'), {
+            value: solution || '# (empty submission)',
+            language: 'python',
+            theme: 'vs-dark',
+            readOnly: true,
+            automaticLayout: true,
+            fontSize: 14,
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false
+        });
+        const testsHost = document.getElementById('testsViewer');
+        if (testsHost && tests) {
+            monaco.editor.create(testsHost, {
+                value: tests,
+                language: 'python',
+                theme: 'vs-dark',
+                readOnly: true,
+                automaticLayout: true,
+                fontSize: 14,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false
+            });
+        }
+    });
+})();
+</script>
+{% endblock %}
