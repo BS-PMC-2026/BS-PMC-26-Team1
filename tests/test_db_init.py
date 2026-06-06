@@ -96,6 +96,9 @@ def test_schema_compatibility_adds_missing_questions_columns(app):
         "test_cases_json",
         "created_at",
         "updated_at",
+        "language",
+        "execution_environment",
+        "compiler_info",
     }
     assert expected.issubset(columns)
 
