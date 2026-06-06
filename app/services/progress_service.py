@@ -110,9 +110,16 @@ def record_exercise_attempt(user_id: int, question_id: int, is_correct: bool) ->
         completed_question_ids.add(question_id)
 
     exercise_percent = int((len(completed_question_ids) / total_questions) * 100) if total_questions else 0
-    update_module_progress_percent(user_id, "Exercise", exercise_percent, completed=exercise_percent >= 100)
+    try:
+        from app.services.settings_service import get_setting_int
 
-    record.exercise_completed = exercise_percent >= 100
+        completion_threshold = get_setting_int("min_completion_score", 70)
+    except Exception:
+        completion_threshold = 70
+    is_exercise_complete = total_questions > 0 and exercise_percent >= completion_threshold
+    update_module_progress_percent(user_id, "Exercise", exercise_percent, completed=is_exercise_complete)
+
+    record.exercise_completed = is_exercise_complete
     record.score = calculate_success_rate(record.correct_answers_count, record.total_attempts)
     return record
 
