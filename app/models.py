@@ -39,6 +39,68 @@ class LecturerProfile(db.Model):
     user = db.relationship("User", backref=db.backref("lecturer_profile", uselist=False))
 
 
+class AdminProfile(db.Model):
+    __tablename__ = "admin_profiles"
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    admin_id = db.Column(db.String(50), unique=True, nullable=False)
+    scope = db.Column(db.String(50), nullable=False, default="full")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    user = db.relationship("User", backref=db.backref("admin_profile", uselist=False))
+
+
+class AuditLog(db.Model):
+    __tablename__ = "audit_logs"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    action = db.Column(db.String(80), nullable=False)
+    target_type = db.Column(db.String(60), nullable=True)
+    target_id = db.Column(db.Integer, nullable=True)
+    details_json = db.Column(db.Text, nullable=True)
+    ip_address = db.Column(db.String(64), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    user = db.relationship("User", backref=db.backref("audit_log_entries", lazy=True))
+
+    @property
+    def details(self):
+        if not self.details_json:
+            return {}
+        try:
+            parsed = json.loads(self.details_json)
+            return parsed if isinstance(parsed, dict) else {}
+        except (json.JSONDecodeError, TypeError):
+            return {}
+
+
+class SystemSetting(db.Model):
+    __tablename__ = "system_settings"
+    key = db.Column(db.String(80), primary_key=True)
+    value = db.Column(db.Text, nullable=False, default="")
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+
+class PasswordResetToken(db.Model):
+    __tablename__ = "password_reset_tokens"
+    token = db.Column(db.String(128), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    user = db.relationship("User", backref=db.backref("reset_tokens", lazy=True))
+
+
+class LoginAttempt(db.Model):
+    __tablename__ = "login_attempts"
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), nullable=False, index=True)
+    success = db.Column(db.Boolean, default=False, nullable=False)
+    ip_address = db.Column(db.String(64), nullable=True)
+    attempted_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+
 class Module(db.Model):
     __tablename__ = "modules"
     id = db.Column(db.Integer, primary_key=True)
@@ -143,8 +205,23 @@ class ExerciseAttempt(db.Model):
     score = db.Column(db.Integer, default=0)
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    user = db.relationship("User", backref=db.backref("exercise_attempts", lazy=True))
+    # Unit-test phase for CODE questions (student writes their own assertions).
+    unit_test_code = db.Column(db.Text)
+    unit_test_passed = db.Column(db.Boolean, default=False)
+    unit_test_output = db.Column(db.Text)
+
+    # Lecturer review on code submissions.
+    lecturer_review = db.Column(db.Text)
+    reviewed_by = db.Column(db.Integer, db.ForeignKey("users.id"))
+    reviewed_at = db.Column(db.DateTime)
+
+    user = db.relationship(
+        "User",
+        foreign_keys=[user_id],
+        backref=db.backref("exercise_attempts", lazy=True),
+    )
     question = db.relationship("Question", backref=db.backref("attempts", lazy=True))
+    reviewer = db.relationship("User", foreign_keys=[reviewed_by])
 
     @property
     def timestamp(self):
