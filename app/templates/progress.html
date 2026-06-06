@@ -16,6 +16,21 @@
 </div>
 {% endif %}
 
+{% if certificate_eligible %}
+<div class="ds-alert ds-alert--success" role="status">
+    <div class="ds-alert__icon" aria-hidden="true">✓</div>
+    <div class="ds-alert__body">
+        <h3 class="ds-alert__title">Course Completed</h3>
+        <p class="ds-alert__message">
+            You have met every requirement for the course completion certificate.
+        </p>
+        <div class="ds-alert__action">
+            <a href="{{ url_for('certificate.certificate') }}" class="ds-btn ds-btn-mint ds-btn-sm">View certificate</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="ds-card" style="margin-bottom: var(--ds-space-7);">
     <h2 class="ds-mt-0">Course Progression (Module-Level)</h2>
     <div style="margin: var(--ds-space-4) 0 var(--ds-space-5);">
@@ -107,6 +122,6 @@
 <div class="action-container">
     <a href="/learning-path" class="ds-btn ds-btn-outline">Open Learning Path</a>
     <a href="/pipeline" class="ds-btn ds-btn-mint">Review Material</a>
-    <a href="/flow/validate" class="ds-btn ds-btn-blue">Flow Validation</a>
+    <a href="/exercise" class="ds-btn ds-btn-blue">Practice Exercises</a>
 </div>
 {% endblock %}
