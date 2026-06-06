@@ -5,7 +5,6 @@ An interactive platform for teaching **CI/CD & DevOps** to students — built wi
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-370%20passing-success)
-![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
