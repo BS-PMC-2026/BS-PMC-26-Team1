@@ -1,107 +1,79 @@
-# CI/CD Learning Platform
+# 🚀 ANTE — CI/CD Academic Learning Platform
 
-## Project Name
-Interactive Software Development Learning Platform in a Continuous Environment
+An interactive platform for teaching **CI/CD & DevOps** to students — built with Flask, featuring a secure Python sandbox, an embedded VS Code editor, and role-based panels for students, lecturers, and admins.
 
-## Project Overview
-This project is an interactive educational web platform designed to help software engineering students learn and practice core CI/CD and DevOps concepts in a simple and practical way.
-
-The system introduces students to topics such as:
-- DevOps fundamentals
-- Continuous Integration (CI)
-- Continuous Delivery / Continuous Deployment (CD)
-- Pipelines
-- Testing
-- Progress tracking
-
-The project is being developed as part of a team project course.
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-370%20passing-success)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
-## Project Goal
-The main goal of this platform is to provide students with a guided environment where they can:
-- learn theoretical CI/CD concepts
-- explore pipeline stages
-- practice exercises
-- track their learning progress
+## 📖 About
+
+CI/CD and DevOps are usually learned from theory and slides, which makes the actual pipeline feel abstract. **ANTE** turns it into a hands-on experience: instead of just reading about *Code → Build → Test → Deploy*, learners walk through each stage, write and run real Python code in the browser, see a live pipeline simulation, and earn a certificate on completion.
+
+**What it does:** guides students through interactive learning modules, lets them solve quiz and coding exercises in a real VS Code editor (with their code running in a secure sandbox), write their own unit tests, and track progress. Lecturers manage questions and theory content and review student submissions, while admins manage users, settings, and the system.
+
+**Who it's for:**
+- **Students** — learning CI/CD & DevOps through practice rather than passive reading.
+- **Lecturers** — managing course content and reviewing student work.
+- **Admins** — running and overseeing the platform.
 
 ---
 
-## Current Sprint Status
-This repository currently contains the implementation for **Sprint 1**.
+## ✨ Features
 
-At this stage, the project includes:
-- basic Flask project structure
-- application routes
-- templates and static files
-- database models
-- seed file
-- service layer
-- automated tests
-- GitHub Actions CI workflow
+- **Embedded Monaco Editor** — the real VS Code editor in the browser, with Python syntax highlighting and IntelliSense.
+- **Animated CI/CD pipeline** — a live *Code → Build → Test → Deploy* simulation with terminal output.
+- **Secure Python sandbox** — thread-isolated execution, 2s timeout, memory limits, and blocked dangerous imports.
+- **Student unit tests** — students write and run their own tests after solving a challenge.
+- **Lecturer code review** — review student submissions and leave feedback.
+- **Security hardening** — CSRF tokens, login throttling, session timeout, and an audit log.
+- **Completion certificate** — auto-generated PDF for students who pass the threshold.
 
 ---
 
-## Main Features Implemented
-- User roles support
-- Intro and pipeline learning pages
-- Exercise-related logic
-- Feedback services
-- Progress-related services
-- Test structure with pytest
-- CI validation using GitHub Actions
+## 🧱 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Backend | Python 3.12 + Flask 3.0 |
+| ORM | SQLAlchemy 2.x |
+| Database | SQLite (default) / MS SQL Server (optional) |
+| Frontend | Jinja2 + custom CSS + Monaco Editor |
+| Testing | pytest (370 tests) |
 
 ---
 
-## Technologies Used
-- Python
-- Flask
-- SQLAlchemy
-- HTML
-- CSS
-- Pytest
-- GitHub Actions
+## ⚙️ Installation & Usage
+
+```bash
+git clone <repo-url>
+cd ANTE
+python -m venv venv
+venv\Scripts\activate          # Windows  (source venv/bin/activate on Linux/Mac)
+pip install -r requirements.txt
+
+python run.py                  # then open http://127.0.0.1:5000
+```
+
+Seed demo data (optional):
+```bash
+python scripts/seed_demo.py
+```
 
 ---
 
-# Manual CI/CD Validation – Sprint 3
+## 🧪 Testing
 
-During Sprint 3, hosted GitHub Actions execution was unavailable due to an account billing/spending-limit restriction.
+```bash
+python -m pytest -v                          # all 370 tests
+python -m pytest --cov=app --cov-report=html # with coverage
+```
 
-Following the lecturer's instruction, the team executed the CI/CD validation manually using equivalent pipeline steps:
+---
 
-1. Install dependencies
-2. Check Python syntax
-3. Run the automated Pytest suite
-4. Generate coverage reports
-5. Save test and coverage evidence
+## 📄 License
 
-## Manual CI Result
-
-- Automated tests: 278 passed
-- Failed tests: 0
-- Coverage: 96%
-- Evidence folder: Sprint3_Evidence
-
-## Manual CI Script
-
-The repository includes:
-
-```text
-manual_ci.ps1
-## Repository Structure
-```text
-.github/workflows/   # GitHub Actions workflow
-app/                 # Main application package
-app/routes/          # Application routes
-app/services/        # Service layer
-app/static/          # CSS and static files
-app/templates/       # HTML templates
-tests/               # Automated tests
-requirements.txt     # Project dependencies
-app.py               # Application entry point
-
-
-
-Updated by Saeed Abu Hani on feature/saeed-in-jira
-
+Released under the **MIT License**.
