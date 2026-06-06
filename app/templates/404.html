@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Page not found</h1>
+    <p class="subtitle">The page you were looking for has been moved or does not exist.</p>
+</div>
+
+<div class="ds-card" style="max-width: 560px; margin: 0 auto; text-align: center;">
+    <div style="font-size: 56px; line-height: 1; margin-bottom: var(--ds-space-3);">🧭</div>
+    <p>Use the navigation above, or return home to continue your learning journey.</p>
+    <div class="action-container">
+        <a href="/" class="ds-btn ds-btn-primary">Back to home</a>
+        <a href="{{ url_for('main.learning_path') }}" class="ds-btn ds-btn-mint">Open learning path</a>
+    </div>
+</div>
+{% endblock %}
