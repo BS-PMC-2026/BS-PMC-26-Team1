@@ -8,6 +8,7 @@
 
 <div class="ds-card" style="max-width: 920px; margin: 0 auto;">
     <form method="POST" class="ds-flex-col" style="gap: var(--ds-space-4);">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <div>
             <label for="theory-headline">Headline</label>
             <input id="theory-headline" type="text" name="headline" required value="{{ content.headline }}">
