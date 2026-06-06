@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 160" role="img" aria-label="Compact learner cutout">
+  <!-- body -->
+  <path d="M20 160 Q20 110 60 110 Q100 110 100 160 Z" fill="#A33A2C"/>
+  <path d="M40 160 Q44 130 60 130 Q76 130 80 160 Z" fill="#FEEECA"/>
+  <!-- backpack strap -->
+  <rect x="38" y="118" width="6" height="42" fill="#1F1B11"/>
+  <rect x="76" y="118" width="6" height="42" fill="#1F1B11"/>
+  <!-- neck -->
+  <rect x="52" y="92" width="16" height="14" rx="2" fill="#E8B79A"/>
+  <!-- head -->
+  <ellipse cx="60" cy="74" rx="28" ry="30" fill="#E8B79A"/>
+  <!-- hair -->
+  <path d="M32 66 Q36 38 60 36 Q86 38 88 66 Q82 52 70 50 L50 50 Q40 54 32 66z" fill="#241509"/>
+  <!-- glasses -->
+  <circle cx="50" cy="74" r="7" fill="none" stroke="#1F1B11" stroke-width="2"/>
+  <circle cx="70" cy="74" r="7" fill="none" stroke="#1F1B11" stroke-width="2"/>
+  <line x1="57" y1="74" x2="63" y2="74" stroke="#1F1B11" stroke-width="2"/>
+  <!-- eyes -->
+  <circle cx="50" cy="74" r="1.8" fill="#1F1B11"/>
+  <circle cx="70" cy="74" r="1.8" fill="#1F1B11"/>
+  <!-- smile -->
+  <path d="M52 86 Q60 92 68 86" stroke="#1F1B11" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>
