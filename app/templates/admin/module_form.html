@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% set source = module if module else form %}
+<div class="module-header">
+    <h1>{% if mode == 'edit' %}Edit Module{% else %}Create Module{% endif %}</h1>
+    <p class="subtitle">Modules drive the learning path order and navigation.</p>
+</div>
+
+<div class="ds-card" style="max-width: 720px; margin: 0 auto;">
+    <form method="POST" class="ds-flex-col" style="gap: var(--ds-space-4);">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div>
+            <label for="module-name">Name</label>
+            <input id="module-name" type="text" name="name" required maxlength="120" value="{{ source.name if source else '' }}">
+        </div>
+        <div>
+            <label for="module-description">Description</label>
+            <textarea id="module-description" name="description" rows="4" required maxlength="1000">{{ source.description if source else '' }}</textarea>
+        </div>
+        <div class="ds-row">
+            <div style="flex:1; min-width: 200px;">
+                <label for="module-route">Route (must start with /)</label>
+                <input id="module-route" type="text" name="route" required maxlength="120" value="{{ source.route if source else '' }}">
+            </div>
+            <div style="flex:0 0 200px;">
+                <label for="module-order">Display order</label>
+                <input id="module-order" type="number" name="display_order" min="1" max="999" value="{{ source.display_order if source else 1 }}">
+            </div>
+        </div>
+        <div class="ds-flex ds-gap-4" style="flex-wrap: wrap;">
+            <button type="submit" class="ds-btn ds-btn-primary">{% if mode == 'edit' %}Save changes{% else %}Create module{% endif %}</button>
+            <a href="{{ url_for('admin.modules') }}" class="ds-btn ds-btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

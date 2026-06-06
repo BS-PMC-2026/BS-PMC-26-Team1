@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Module Management</h1>
+    <p class="subtitle">Curate the learning path order, descriptions and routes.</p>
+</div>
+
+<div class="action-container" style="margin-bottom: var(--ds-space-5); justify-content: flex-start;">
+    <a href="{{ url_for('admin.module_create') }}" class="ds-btn ds-btn-primary">+ New Module</a>
+    <a href="{{ url_for('admin.dashboard') }}" class="ds-btn ds-btn-outline">Back to dashboard</a>
+</div>
+
+<div class="ds-card">
+    {% if modules %}
+    <table class="ds-table">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Name</th>
+                <th>Route</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for module in modules %}
+            <tr>
+                <td>{{ module.display_order }}</td>
+                <td><strong>{{ module.name }}</strong></td>
+                <td><code>{{ module.route }}</code></td>
+                <td>{{ module.description }}</td>
+                <td>
+                    <div class="ds-flex ds-gap-2" style="flex-wrap: wrap;">
+                        <a href="{{ url_for('admin.module_edit', module_id=module.id) }}" class="ds-btn ds-btn-sm ds-btn-mint">Edit</a>
+                        <form method="POST" action="{{ url_for('admin.module_delete', module_id=module.id) }}" style="margin:0;"
+                              onsubmit="return confirm('Delete module {{ module.name }}? Associated theory will be removed.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="ds-btn ds-btn-sm" style="background: var(--ds-state-error); color: var(--ds-text-light);">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="ds-alert ds-alert--info" role="status">
+        <div class="ds-alert__icon" aria-hidden="true">i</div>
+        <div class="ds-alert__body">
+            <h3 class="ds-alert__title">No modules defined yet</h3>
+            <p class="ds-alert__message">Create the first module to build the learning path.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

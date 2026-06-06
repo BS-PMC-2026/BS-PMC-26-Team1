@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" role="img" aria-label="Student with laptop">
+  <defs><clipPath id="c1"><rect width="160" height="200" x="20" y="20" rx="80 80 12 12"/></clipPath></defs>
+  <rect width="200" height="240" fill="transparent"/>
+  <g clip-path="url(#c1)">
+    <rect width="200" height="240" fill="#FEEECA"/>
+    <!-- body -->
+    <path d="M40 240 Q40 170 100 170 Q160 170 160 240 Z" fill="#3D5145"/>
+    <!-- t-shirt darker patches -->
+    <path d="M60 240 Q70 200 100 200 Q130 200 140 240 Z" fill="#2B3B33"/>
+    <!-- neck -->
+    <rect x="86" y="148" width="28" height="22" rx="4" fill="#E8B79A"/>
+    <!-- head -->
+    <ellipse cx="100" cy="120" rx="46" ry="48" fill="#E8B79A"/>
+    <!-- hair -->
+    <path d="M55 110 Q60 60 100 60 Q145 60 144 112 Q140 100 132 96 L72 96 Q60 100 55 110z" fill="#2A1810"/>
+    <!-- short beard -->
+    <path d="M62 130 Q75 158 100 162 Q125 158 138 130 Q130 144 100 146 Q70 144 62 130z" fill="#2A1810" opacity="0.9"/>
+    <!-- eyes -->
+    <circle cx="82" cy="118" r="3.5" fill="#1F1B11"/>
+    <circle cx="118" cy="118" r="3.5" fill="#1F1B11"/>
+    <!-- smile -->
+    <path d="M84 134 Q100 144 116 134" stroke="#1F1B11" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- laptop edge -->
+    <rect x="40" y="222" width="120" height="10" rx="3" fill="#1F1B11"/>
+    <rect x="46" y="210" width="108" height="14" rx="3" fill="#5750E5"/>
+  </g>
+</svg>

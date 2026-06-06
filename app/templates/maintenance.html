@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>The platform is under maintenance</h1>
+    <p class="subtitle">Our administrators are performing scheduled work. Please check back shortly.</p>
+</div>
+
+<div class="ds-card" style="max-width: 560px; margin: 0 auto; text-align: center;">
+    <div style="font-size: 56px; line-height: 1; margin-bottom: var(--ds-space-3);">🛠️</div>
+    <p>Students and lecturers will regain access once maintenance is complete.</p>
+    <p class="ds-text-muted" style="font-size: var(--ds-fs-small);">If you are an administrator, please sign in to continue managing the platform.</p>
+    <div class="action-container">
+        <a href="{{ url_for('auth.login') }}" class="ds-btn ds-btn-primary">Sign in</a>
+    </div>
+</div>
+{% endblock %}

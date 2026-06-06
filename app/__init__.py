@@ -1,117 +1,183 @@
-"""
-Main app factory — used for both standalone (4_saaed only) and the
-full combined project (all four folders merged together).
-
-Standalone mode  : only intro_bp loads; stub routes fill the gaps.
-Combined mode    : all blueprints are discovered automatically via
-                   try/except imports — no manual changes needed when
-                   team members add their files to the project.
-
-Run from the 4_saaed/ folder (standalone):
-    python app.py
-
-Run from the combined ANTE/ folder:
-    python app.py
-"""
-import importlib
-from flask import Flask, session, redirect
-from app.models import db
+import logging
 import os
+import urllib.parse
+from datetime import datetime, timedelta
+
+from flask import Flask, redirect, render_template, request, session, url_for
+
+from app.models import db
 
 
-def _try_register(app, module_path, blueprint_name):
-    """Import a blueprint and register it. Returns True on success."""
-    try:
-        module = importlib.import_module(module_path)
-        bp = getattr(module, blueprint_name)
-        app.register_blueprint(bp)
-        return True
-    except (ImportError, AttributeError):
-        return False
+SESSION_TIMEOUT_MINUTES = 60
+
+
+def _is_safe_internal_path(path: str) -> bool:
+    return path.startswith("/static/") or path == "/favicon.ico"
+
+
+def _ensure_login_freshness(app: Flask):
+    @app.before_request
+    def _check_session_timeout():
+        user_id = session.get("user_id")
+        if not user_id:
+            return None
+        login_iso = session.get("login_at")
+        if not login_iso:
+            session["login_at"] = datetime.utcnow().isoformat()
+            return None
+        try:
+            login_at = datetime.fromisoformat(login_iso)
+        except (TypeError, ValueError):
+            session["login_at"] = datetime.utcnow().isoformat()
+            return None
+        if datetime.utcnow() - login_at > timedelta(minutes=SESSION_TIMEOUT_MINUTES):
+            session.clear()
+            if request.method == "GET" and not _is_safe_internal_path(request.path):
+                from flask import flash
+
+                flash("Your session expired. Please log in again.", "warning")
+                return redirect(url_for("auth.login"))
+        return None
+
+
+def _ensure_maintenance_gate(app: Flask):
+    @app.before_request
+    def _maintenance_gate():
+        if request.endpoint is None:
+            return None
+        if _is_safe_internal_path(request.path):
+            return None
+        allowed_endpoints = {
+            "auth.login",
+            "auth.logout",
+            "auth.forgot_password",
+            "auth.reset_password",
+            "static",
+        }
+        try:
+            from app.services.settings_service import is_maintenance_mode
+        except Exception:
+            return None
+        try:
+            in_maintenance = is_maintenance_mode()
+        except Exception:
+            in_maintenance = False
+        if not in_maintenance:
+            return None
+        if session.get("role") == "admin":
+            return None
+        if request.endpoint in allowed_endpoints:
+            return None
+        if request.endpoint and request.endpoint.startswith("admin."):
+            return None
+        return render_template("maintenance.html"), 503
+
+
+def _ensure_csrf(app: Flask):
+    @app.context_processor
+    def _inject_csrf():
+        from app.services.security_service import get_or_create_csrf_token
+
+        try:
+            token = get_or_create_csrf_token()
+        except Exception:
+            token = ""
+        return {"csrf_token": token}
+
+
+def _ensure_settings_context(app: Flask):
+    @app.context_processor
+    def _inject_settings():
+        try:
+            from app.services.settings_service import get_setting, is_maintenance_mode
+
+            return {
+                "system_name": get_setting("system_name", "ANTE CI/CD Academy"),
+                "maintenance_mode_on": is_maintenance_mode(),
+            }
+        except Exception:
+            return {"system_name": "ANTE CI/CD Academy", "maintenance_mode_on": False}
+
+
+def _register_error_handlers(app: Flask):
+    @app.errorhandler(404)
+    def _not_found(_err):
+        return render_template("404.html"), 404
+
+    @app.errorhandler(500)
+    def _server_error(_err):
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        app.logger.exception("Unhandled server error")
+        return render_template("500.html"), 500
 
 
 def create_app(test_config=None):
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project_v2.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.secret_key = os.environ.get(
-        'SECRET_KEY', 'default-secret-key-for-dev'
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project_v2.db"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.secret_key = os.environ.get("SECRET_KEY", "default-secret-key-for-dev")
+    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=SESSION_TIMEOUT_MINUTES)
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+    use_sqlserver = os.environ.get("USE_SQLSERVER", "0") == "1"
+    if use_sqlserver:
+        sqlserver_conn = (
+            "Driver={ODBC Driver 17 for SQL Server};"
+            "Server=(localdb)\\MSSQLLocalDB;"
+            "Database=ANTE_ACADEMIC;"
+            "Trusted_Connection=yes;"
+        )
+        app.config["SQLALCHEMY_DATABASE_URI"] = (
+            "mssql+pyodbc:///?odbc_connect=" + urllib.parse.quote_plus(sqlserver_conn)
+        )
+
+    if os.environ.get("DATABASE_URL"):
+        app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
 
     if test_config:
         app.config.update(test_config)
 
     db.init_app(app)
 
-    # --- Core blueprint (always present in this folder) ---
+    from app.routes.admin import admin_bp
+    from app.routes.auth import auth_bp
+    from app.routes.certificate import certificate_bp
+    from app.routes.exercise import exercise_bp
     from app.routes.intro import intro_bp
+    from app.routes.lecturer import lecturer_bp
+    from app.routes.main import main_bp
+    from app.routes.pipeline import pipeline_bp
+    from app.routes.progress import progress_bp
+
     app.register_blueprint(intro_bp)
+    app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(pipeline_bp)
+    app.register_blueprint(exercise_bp)
+    app.register_blueprint(progress_bp)
+    app.register_blueprint(lecturer_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(certificate_bp)
 
-    # --- Optional blueprints from other team members ---
-    # These load automatically once the full project is assembled.
-    has_main = _try_register(app, 'app.routes.main', 'main_bp')
-    has_auth = _try_register(app, 'app.routes.auth', 'auth_bp')
-    has_pipeline = _try_register(app, 'app.routes.pipeline', 'pipeline_bp')
-    has_exercise = _try_register(app, 'app.routes.exercise', 'exercise_bp')
-    has_progress = _try_register(app, 'app.routes.progress', 'progress_bp')
+    _ensure_login_freshness(app)
+    _ensure_maintenance_gate(app)
+    _ensure_csrf(app)
+    _ensure_settings_context(app)
+    _register_error_handlers(app)
 
-    # --- Standalone stubs (only active when running 4_saaed alone) ---
-    if not has_main:
-        @app.route('/')
-        def home():
-            return redirect('/intro')
-
-    if not has_auth:
-        # Auto-login so protected routes don't crash in standalone mode
-        @app.before_request
-        def auto_login():
-            if not session.get('user_id'):
-                from app.models import User
-                test_user = User.query.filter_by(
-                    email='test@example.com'
-                ).first()
-                if test_user:
-                    session['user_id'] = test_user.id
-                    session['user_name'] = test_user.full_name
-                    session['role'] = test_user.role
-
-        @app.route('/logout')
-        def logout():
-            session.clear()
-            return redirect('/')
-
-    if not has_pipeline:
-        @app.route('/pipeline')
-        def pipeline_stub():
-            return redirect('/intro')
-
-    if not has_exercise:
-        @app.route('/exercise')
-        def exercise_stub():
-            return redirect('/intro')
-
-    if not has_progress:
-        @app.route('/progress')
-        def progress_stub():
-            return redirect('/intro')
+    if not app.config.get("TESTING"):
+        app.logger.setLevel(logging.INFO)
 
     with app.app_context():
         db.create_all()
-        _seed_test_user()
+        from app.seed import bootstrap_database
+        from app.services.db_init import ensure_schema_compatibility
+
+        ensure_schema_compatibility()
+        bootstrap_database()
 
     return app
-
-
-def _seed_test_user():
-    """Create a default test user so standalone mode works out of the box."""
-    from app.models import User
-    from werkzeug.security import generate_password_hash
-    if not User.query.filter_by(email='test@example.com').first():
-        test_user = User(
-            full_name='Test Student',
-            email='test@example.com',
-            password_hash=generate_password_hash('password123'),
-            role='student',
-        )
-        db.session.add(test_user)
-        db.session.commit()

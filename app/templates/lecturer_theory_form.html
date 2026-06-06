@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Edit {{ module.name }} Theory</h1>
+    <p class="subtitle">Keep explanations and examples aligned with current DevOps teaching.</p>
+</div>
+
+<div class="ds-card" style="max-width: 920px; margin: 0 auto;">
+    <form method="POST" class="ds-flex-col" style="gap: var(--ds-space-4);">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div>
+            <label for="theory-headline">Headline</label>
+            <input id="theory-headline" type="text" name="headline" required value="{{ content.headline }}">
+        </div>
+
+        <div>
+            <label for="theory-explanation">Explanation</label>
+            <textarea id="theory-explanation" name="explanation" rows="6" required>{{ content.explanation }}</textarea>
+        </div>
+
+        <div>
+            <label for="theory-examples">Examples</label>
+            <textarea id="theory-examples" name="examples" rows="5" required>{{ content.examples }}</textarea>
+        </div>
+
+        <div class="ds-flex ds-gap-4" style="flex-wrap: wrap;">
+            <button class="ds-btn ds-btn-primary" type="submit">Save Theory Update</button>
+            <a href="/lecturer/theory" class="ds-btn ds-btn-outline">Back</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

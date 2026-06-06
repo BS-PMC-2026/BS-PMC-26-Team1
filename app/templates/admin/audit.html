@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Audit Log</h1>
+    <p class="subtitle">Every important platform action, in descending chronological order.</p>
+</div>
+
+<div class="ds-card" style="margin-bottom: var(--ds-space-5);">
+    <form method="GET" action="{{ url_for('admin.audit') }}" class="ds-row" style="align-items:end;">
+        <div style="flex:2; min-width: 200px;">
+            <label for="audit-q">Search</label>
+            <input id="audit-q" type="text" name="q" value="{{ search }}" placeholder="Action, target, details…">
+        </div>
+        <div style="flex:1; min-width: 160px;">
+            <label for="audit-action">Action</label>
+            <input id="audit-action" type="text" name="action" value="{{ action_filter }}" placeholder="e.g. user.delete">
+        </div>
+        <div style="flex:1; min-width: 160px;">
+            <label for="audit-user">User</label>
+            <input id="audit-user" type="text" name="user" value="{{ user_filter }}" placeholder="Name / email">
+        </div>
+        <div style="flex:0 0 160px;">
+            <label for="audit-start">Start</label>
+            <input id="audit-start" type="date" name="start" value="{{ start_date }}">
+        </div>
+        <div style="flex:0 0 160px;">
+            <label for="audit-end">End</label>
+            <input id="audit-end" type="date" name="end" value="{{ end_date }}">
+        </div>
+        <div>
+            <button type="submit" class="ds-btn ds-btn-primary">Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="ds-card">
+    {% if paged.rows %}
+    <table class="ds-table">
+        <thead>
+            <tr>
+                <th>When (UTC)</th>
+                <th>Actor</th>
+                <th>Action</th>
+                <th>Target</th>
+                <th>Details</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in paged.rows %}
+            <tr>
+                <td>{{ entry.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>{{ entry.user.full_name if entry.user else 'system' }}</td>
+                <td><span class="ds-pill">{{ entry.action }}</span></td>
+                <td>{{ entry.target_type or '-' }}{% if entry.target_id %} #{{ entry.target_id }}{% endif %}</td>
+                <td style="font-family: monospace; font-size: var(--ds-fs-small); max-width: 360px; word-break: break-word;">
+                    {{ entry.details_json or '' }}
+                </td>
+                <td style="font-family: monospace; font-size: var(--ds-fs-small);">{{ entry.ip_address or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="ds-flex ds-justify-between ds-items-center ds-mt-6" style="flex-wrap: wrap; gap: var(--ds-space-3);">
+        <p class="ds-text-muted" style="margin:0; font-size: var(--ds-fs-small);">
+            Showing {{ paged.rows|length }} of {{ paged.total }} entries (page {{ paged.page }} of {{ paged.pages }}).
+        </p>
+        <div class="ds-flex ds-gap-2">
+            {% if paged.page > 1 %}
+                <a class="ds-btn ds-btn-sm ds-btn-outline"
+                   href="{{ url_for('admin.audit', page=paged.page - 1, q=search, action=action_filter, user=user_filter, start=start_date, end=end_date) }}">Previous</a>
+            {% endif %}
+            {% if paged.page < paged.pages %}
+                <a class="ds-btn ds-btn-sm ds-btn-outline"
+                   href="{{ url_for('admin.audit', page=paged.page + 1, q=search, action=action_filter, user=user_filter, start=start_date, end=end_date) }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="ds-alert ds-alert--info" role="status">
+        <div class="ds-alert__icon" aria-hidden="true">i</div>
+        <div class="ds-alert__body">
+            <h3 class="ds-alert__title">No audit entries match your filters</h3>
+            <p class="ds-alert__message">Clear or relax the filters to view recorded activity.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

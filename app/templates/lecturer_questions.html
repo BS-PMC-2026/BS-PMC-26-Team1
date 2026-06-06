@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Question Bank Management</h1>
+    <p class="subtitle">Create, update, enable / disable, and delete MCQ, Code, and Open questions.</p>
+</div>
+
+<div class="action-container" style="margin-bottom: var(--ds-space-5); justify-content: flex-start;">
+    <a href="/lecturer/questions/new" class="ds-btn ds-btn-primary">+ Add Question</a>
+    <span class="ds-pill ds-pill-success">
+        Active: {{ questions | selectattr('is_active') | list | length }}
+    </span>
+    <span class="ds-pill ds-pill-error">
+        Inactive: {{ questions | rejectattr('is_active') | list | length }}
+    </span>
+    <span class="ds-pill">Total: {{ questions | length }}</span>
+</div>
+
+<form method="POST" action="{{ url_for('lecturer.lecturer_question_bulk') }}" id="bulkForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <div class="ds-card ds-mb-4" style="display:flex; flex-wrap: wrap; gap: var(--ds-space-3); align-items: center;">
+        <span style="font-weight: var(--ds-weight-title);">Bulk actions:</span>
+        <button type="submit" name="bulk_action" value="enable" class="ds-btn ds-btn-mint ds-btn-sm"
+                onclick="return confirmBulk('enable');">▶ Enable selected</button>
+        <button type="submit" name="bulk_action" value="disable" class="ds-btn ds-btn-yellow ds-btn-sm"
+                onclick="return confirmBulk('disable');">⏸ Disable selected</button>
+        <span class="ds-text-muted" style="font-size: var(--ds-fs-small);" id="selectedCount">0 selected</span>
+    </div>
+
+    <div class="ds-card">
+        {% if questions %}
+        <table class="ds-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">
+                        <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"
+                               style="width:auto; accent-color: var(--ds-primary); margin:0;">
+                    </th>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Module</th>
+                    <th>Difficulty</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in questions %}
+                <tr>
+                    <td>
+                        <input type="checkbox" name="question_ids" value="{{ q.id }}" class="row-check"
+                               onclick="updateSelectedCount()"
+                               style="width:auto; accent-color: var(--ds-primary); margin:0;">
+                    </td>
+                    <td>{{ q.id }}</td>
+                    <td><span class="ds-pill">{{ q.question_type.upper() }}</span></td>
+                    <td>{{ modules_by_id[q.module_id].name if modules_by_id.get(q.module_id) else '-' }}</td>
+                    <td>{{ q.difficulty }}</td>
+                    <td>
+                        {% if q.is_active %}
+                            <span class="ds-pill ds-pill-success">● Active</span>
+                        {% else %}
+                            <span class="ds-pill ds-pill-error">○ Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="ds-flex ds-gap-2" style="flex-wrap: wrap;">
+                            <a href="/lecturer/questions/{{ q.id }}/edit" class="ds-btn ds-btn-mint ds-btn-sm">Edit</a>
+                            <button type="submit" form="toggle-form-{{ q.id }}"
+                                    class="ds-btn ds-btn-sm {% if q.is_active %}ds-btn-yellow{% else %}ds-btn-mint{% endif %}">
+                                {% if q.is_active %}⏸ Disable{% else %}▶ Enable{% endif %}
+                            </button>
+                            <button type="submit" form="delete-form-{{ q.id }}"
+                                    class="ds-btn ds-btn-sm" style="background: var(--ds-state-error); color: var(--ds-text-light);">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="ds-alert ds-alert--info" role="status">
+            <div class="ds-alert__icon" aria-hidden="true">i</div>
+            <div class="ds-alert__body">
+                <h3 class="ds-alert__title">No questions yet</h3>
+                <p class="ds-alert__message">Click <strong>+ Add Question</strong> above to seed the question bank.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</form>
+
+{# Per-row forms are kept outside the bulk form to avoid nested-form issues. #}
+{% for q in questions %}
+<form id="toggle-form-{{ q.id }}" action="/lecturer/questions/{{ q.id }}/toggle" method="POST" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+</form>
+<form id="delete-form-{{ q.id }}" action="/lecturer/questions/{{ q.id }}/delete" method="POST"
+      onsubmit="return confirm('Delete question #{{ q.id }}? This cannot be undone.');" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+</form>
+{% endfor %}
+
+<script>
+function toggleSelectAll(master) {
+    document.querySelectorAll('.row-check').forEach(function (cb) { cb.checked = master.checked; });
+    updateSelectedCount();
+}
+function updateSelectedCount() {
+    var count = document.querySelectorAll('.row-check:checked').length;
+    document.getElementById('selectedCount').textContent = count + ' selected';
+}
+function confirmBulk(action) {
+    var count = document.querySelectorAll('.row-check:checked').length;
+    if (count === 0) {
+        alert('Select at least one question first.');
+        return false;
+    }
+    return confirm(action.charAt(0).toUpperCase() + action.slice(1) + ' ' + count + ' question(s)?');
+}
+</script>
+{% endblock %}

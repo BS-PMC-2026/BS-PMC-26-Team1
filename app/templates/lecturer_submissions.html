@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Student Code Submissions</h1>
+    <p class="subtitle">Inspect, run, and review every coding attempt your students have submitted.</p>
+</div>
+
+<div class="ds-card ds-mb-4">
+    <form method="GET" action="{{ url_for('lecturer.lecturer_submissions') }}" class="ds-row" style="align-items:end;">
+        <div style="flex:2; min-width: 220px;">
+            <label for="student">Student</label>
+            <input id="student" type="text" name="student" value="{{ student_filter }}" placeholder="Name / email">
+        </div>
+        <div style="flex:1; min-width: 200px;">
+            <label for="question">Question</label>
+            <select id="question" name="question">
+                <option value="">All code questions</option>
+                {% for q in questions %}
+                <option value="{{ q.id }}" {% if question_filter == q.id %}selected{% endif %}>#{{ q.id }} – {{ q.question_text[:50] }}{% if q.question_text|length > 50 %}…{% endif %}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="flex:1; min-width: 160px;">
+            <label for="review">Review status</label>
+            <select id="review" name="review">
+                <option value="" {% if not review_filter %}selected{% endif %}>All</option>
+                <option value="pending" {% if review_filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="reviewed" {% if review_filter == 'reviewed' %}selected{% endif %}>Reviewed</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="ds-btn ds-btn-primary">Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="ds-card">
+    {% if paged.rows %}
+    <table class="ds-table">
+        <thead>
+            <tr>
+                <th>When (UTC)</th>
+                <th>Student</th>
+                <th>Question</th>
+                <th>Result</th>
+                <th>Unit tests</th>
+                <th>Review</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attempt in paged.rows %}
+            <tr>
+                <td style="white-space: nowrap;">{{ attempt.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ attempt.user.full_name if attempt.user else 'unknown' }}</td>
+                <td>#{{ attempt.question_id }} – {{ attempt.question.question_text[:60] }}{% if attempt.question.question_text|length > 60 %}…{% endif %}</td>
+                <td>
+                    {% if attempt.is_correct %}
+                        <span class="ds-pill ds-pill-success">Passed</span>
+                    {% else %}
+                        <span class="ds-pill ds-pill-error">Failed</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if attempt.unit_test_passed %}
+                        <span class="ds-pill ds-pill-success">Passed</span>
+                    {% elif attempt.unit_test_code %}
+                        <span class="ds-pill ds-pill-progress">Submitted</span>
+                    {% else %}
+                        <span class="ds-pill">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if attempt.lecturer_review %}
+                        <span class="ds-pill ds-pill-success">✓ {{ attempt.reviewed_at.strftime('%Y-%m-%d') if attempt.reviewed_at else '' }}</span>
+                    {% else %}
+                        <span class="ds-pill ds-pill-progress">Pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('lecturer.lecturer_submission_detail', attempt_id=attempt.id) }}" class="ds-btn ds-btn-sm ds-btn-mint">Open</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="ds-flex ds-justify-between ds-items-center ds-mt-6" style="flex-wrap: wrap; gap: var(--ds-space-3);">
+        <p class="ds-text-muted" style="margin:0; font-size: var(--ds-fs-small);">
+            Showing {{ paged.rows|length }} of {{ paged.total }} submissions (page {{ paged.page }} / {{ paged.pages }}).
+        </p>
+        <div class="ds-flex ds-gap-2">
+            {% if paged.page > 1 %}
+                <a class="ds-btn ds-btn-sm ds-btn-outline"
+                   href="{{ url_for('lecturer.lecturer_submissions', page=paged.page - 1, student=student_filter, question=question_filter, review=review_filter) }}">Previous</a>
+            {% endif %}
+            {% if paged.page < paged.pages %}
+                <a class="ds-btn ds-btn-sm ds-btn-outline"
+                   href="{{ url_for('lecturer.lecturer_submissions', page=paged.page + 1, student=student_filter, question=question_filter, review=review_filter) }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="ds-alert ds-alert--info" role="status">
+        <div class="ds-alert__icon" aria-hidden="true">i</div>
+        <div class="ds-alert__body">
+            <h3 class="ds-alert__title">No submissions match these filters</h3>
+            <p class="ds-alert__message">Clear or relax the filters to see more student code attempts.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

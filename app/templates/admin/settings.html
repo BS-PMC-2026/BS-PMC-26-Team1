@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>System Settings</h1>
+    <p class="subtitle">Platform-wide configuration that takes effect immediately.</p>
+</div>
+
+<div class="ds-card" style="max-width: 720px; margin: 0 auto;">
+    <form method="POST" class="ds-flex-col" style="gap: var(--ds-space-4);">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div>
+            <label for="system_name">System name</label>
+            <input id="system_name" type="text" name="system_name" required maxlength="100" value="{{ settings.system_name }}">
+        </div>
+
+        <div>
+            <label for="min_password_length">Minimum password length</label>
+            <input id="min_password_length" type="number" name="min_password_length" min="6" max="64"
+                   value="{{ settings.min_password_length }}">
+            <p class="ds-text-muted" style="font-size: var(--ds-fs-small); margin: 4px 0 0;">Applies to new registrations and password resets.</p>
+        </div>
+
+        <div>
+            <label for="min_completion_score">Minimum completion score (%)</label>
+            <input id="min_completion_score" type="number" name="min_completion_score" min="0" max="100"
+                   value="{{ settings.min_completion_score }}">
+            <p class="ds-text-muted" style="font-size: var(--ds-fs-small); margin: 4px 0 0;">Required success rate for course completion certificates.</p>
+        </div>
+
+        <div class="ds-flex ds-items-center ds-gap-3" style="padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--ds-radius-input); background: rgba(255, 232, 103, 0.18); border: 1px solid var(--ds-state-progress);">
+            <input type="checkbox" id="maintenance_mode" name="maintenance_mode"
+                   {% if settings.maintenance_mode in ['1', 'true', 'on', 'yes'] %}checked{% endif %}
+                   style="width:auto; margin:0; accent-color: var(--ds-state-progress);">
+            <label for="maintenance_mode" style="margin:0;">Enable maintenance mode (only admins can access the platform)</label>
+        </div>
+
+        <div class="ds-flex ds-gap-4" style="flex-wrap: wrap;">
+            <button type="submit" class="ds-btn ds-btn-primary">Save settings</button>
+            <a href="{{ url_for('admin.dashboard') }}" class="ds-btn ds-btn-outline">Back to dashboard</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

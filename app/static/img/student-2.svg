@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" role="img" aria-label="Student holding books">
+  <defs><clipPath id="c2"><rect width="160" height="200" x="20" y="20" rx="80 80 12 12"/></clipPath></defs>
+  <g clip-path="url(#c2)">
+    <rect width="200" height="240" fill="#FEEECA"/>
+    <!-- body -->
+    <path d="M40 240 Q40 170 100 170 Q160 170 160 240 Z" fill="#FFD575"/>
+    <!-- neck -->
+    <rect x="86" y="148" width="28" height="22" rx="4" fill="#E8B79A"/>
+    <!-- head -->
+    <ellipse cx="100" cy="120" rx="46" ry="48" fill="#E8B79A"/>
+    <!-- hair (longer) -->
+    <path d="M52 116 Q56 60 100 60 Q146 60 148 116 Q140 100 132 96 L72 96 Q60 102 52 116z" fill="#3D2914"/>
+    <path d="M50 116 L52 168 Q58 170 60 162 Q60 140 56 122 Z" fill="#3D2914"/>
+    <path d="M150 116 L148 168 Q142 170 140 162 Q140 140 144 122 Z" fill="#3D2914"/>
+    <!-- eyes -->
+    <circle cx="82" cy="118" r="3.5" fill="#1F1B11"/>
+    <circle cx="118" cy="118" r="3.5" fill="#1F1B11"/>
+    <!-- smile -->
+    <path d="M84 134 Q100 144 116 134" stroke="#1F1B11" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- holding books -->
+    <g transform="translate(74 200) rotate(-6)">
+      <rect width="60" height="18" rx="3" fill="#10B981"/>
+      <rect y="18" width="60" height="14" rx="3" fill="#5750E5"/>
+      <rect y="32" width="60" height="14" rx="3" fill="#FF4343"/>
+    </g>
+    <!-- arm holding -->
+    <ellipse cx="60" cy="206" rx="10" ry="22" fill="#FFD575"/>
+    <ellipse cx="140" cy="206" rx="10" ry="22" fill="#FFD575"/>
+  </g>
+</svg>

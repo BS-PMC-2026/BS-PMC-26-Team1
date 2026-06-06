@@ -5,7 +5,13 @@ from typing import Dict, List, Optional
 from flask import session
 
 from app.models import Module, Question, db
-from app.seed import get_seed_questions
+from app.seed import QuestionType, get_seed_questions
+from app.services.code_runner_service import (
+    default_compiler_label,
+    default_environment_label,
+    normalize_language,
+)
+from app.services.state_service import persist_learning_state
 
 
 def list_question_bank(include_inactive: bool = True) -> List[Question]:
@@ -17,7 +23,7 @@ def list_question_bank(include_inactive: bool = True) -> List[Question]:
 
 def serialize_question(question: Question) -> Dict:
     seed_title_map = {row["id"]: row.get("title", "") for row in get_seed_questions()}
-    return {
+    base = {
         "id": question.id,
         "type": question.question_type,
         "title": seed_title_map.get(question.id, f"Question {question.id}"),
@@ -30,6 +36,20 @@ def serialize_question(question: Question) -> Dict:
         "module_id": question.module_id,
         "test_cases": question.code_test_cases,
     }
+    if question.question_type == QuestionType.CODE.value:
+        lang = normalize_language(question.language)
+        base["language"] = lang
+        base["display_language"] = lang.replace("_", " ").title()
+        base["execution_environment"] = (
+            question.execution_environment or default_environment_label(lang)
+        )
+        base["compiler_info"] = question.compiler_info or default_compiler_label(lang)
+    else:
+        base["language"] = None
+        base["display_language"] = None
+        base["execution_environment"] = None
+        base["compiler_info"] = None
+    return base
 
 
 def get_question_by_id(question_id: int) -> Optional[Question]:
@@ -62,6 +82,12 @@ def initialize_question_order() -> List[int]:
     session[_session_question_order_key()] = question_ids
     session[_session_seen_key()] = []
     session.modified = True
+    if session.get("user_id") and not session.get("demo_mode"):
+        persist_learning_state(
+            session["user_id"],
+            current_module_name="Exercise",
+            last_route="/exercise",
+        )
     return question_ids
 
 
@@ -69,12 +95,11 @@ def get_or_create_question_order() -> List[int]:
     current = session.get(_session_question_order_key())
     if not current:
         return initialize_question_order()
-    # keep only ids that still exist and active
+    # Pick up newly added / removed / deactivated questions automatically.
     active_ids = {q.id for q in get_exercise_questions()}
-    filtered = [qid for qid in current if qid in active_ids]
-    if not filtered or len(filtered) != len(current):
+    if set(current) != active_ids:
         return initialize_question_order()
-    return filtered
+    return current
 
 
 def mark_question_seen(question_id: int) -> None:
@@ -83,6 +108,12 @@ def mark_question_seen(question_id: int) -> None:
         seen.append(question_id)
         session[_session_seen_key()] = seen
         session.modified = True
+    if session.get("user_id") and not session.get("demo_mode"):
+        persist_learning_state(
+            session["user_id"],
+            current_module_name="Exercise",
+            last_route="/exercise",
+        )
 
 
 def next_question_index(current_index: int, total_questions: int) -> int:

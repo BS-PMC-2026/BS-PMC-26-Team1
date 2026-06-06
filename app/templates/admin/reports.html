@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Reports & Exports</h1>
+    <p class="subtitle">Generate CSV reports for administrative review and offline analysis.</p>
+</div>
+
+<div class="ds-row">
+    {% for key, label in report_labels.items() %}
+    <div class="ds-card" style="flex:1; min-width: 280px;">
+        <h2 class="ds-mt-0">{{ label }}</h2>
+        <p class="ds-text-muted" style="font-size: var(--ds-fs-small);">
+            {% if key == 'students' %}Per-student attempts, success rate and account status.{% endif %}
+            {% if key == 'questions' %}Per-question difficulty signal and attempt volume.{% endif %}
+            {% if key == 'usage' %}Daily attempts, unique learners and overall success rate.{% endif %}
+        </p>
+        <form method="GET" action="{{ url_for('admin.reports_download', report_key=key) }}" class="ds-flex-col" style="gap: var(--ds-space-3);">
+            <div class="ds-row">
+                <div style="flex:1; min-width: 140px;">
+                    <label for="{{ key }}-start">From</label>
+                    <input id="{{ key }}-start" type="date" name="start">
+                </div>
+                <div style="flex:1; min-width: 140px;">
+                    <label for="{{ key }}-end">To</label>
+                    <input id="{{ key }}-end" type="date" name="end">
+                </div>
+            </div>
+            <button type="submit" class="ds-btn ds-btn-primary">Download CSV</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+
+<p class="ds-text-muted ds-mt-4" style="font-size: var(--ds-fs-small);">
+    CSV files are generated on demand with a UTF-8 byte-order mark so Hebrew text renders correctly when opened in Excel.
+</p>
+{% endblock %}
