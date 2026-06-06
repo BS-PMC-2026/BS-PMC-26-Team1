@@ -72,8 +72,3 @@ python -m pytest -v                          # all 370 tests
 python -m pytest --cov=app --cov-report=html # with coverage
 ```
 
----
-
-## 📄 License
-
-Released under the **MIT License**.
