@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="module-header">
+    <h1>Course Completion Certificate</h1>
+    <p class="subtitle">Recognizing successful completion of the ANTE CI/CD learning path.</p>
+</div>
+
+{% if eligibility.eligible %}
+<div class="ds-card ds-card-light" style="max-width: 760px; margin: 0 auto var(--ds-space-5); padding: var(--ds-space-7); text-align: center; border-top: 6px solid var(--ds-primary); border-bottom: 6px solid var(--ds-primary);">
+    <span class="ds-pill ds-pill-mint" style="margin-bottom: var(--ds-space-3);">Verified completion</span>
+    <h2 class="ds-text-dark" style="margin-top: var(--ds-space-3);">{{ system_name }}</h2>
+    <p class="ds-text-dark" style="margin: var(--ds-space-3) 0;">This certificate is awarded to</p>
+    <h1 class="ds-text-dark" style="font-size: 36px; line-height: 1.2; margin: var(--ds-space-3) 0;">{{ eligibility.user.full_name }}</h1>
+    <p class="ds-text-dark" style="margin: var(--ds-space-3) auto; max-width: 540px;">
+        for successfully completing the ANTE CI/CD Learning Path with a score of
+        <strong>{{ eligibility.score }}%</strong>
+        across <strong>{{ eligibility.modules_completed }}/{{ eligibility.modules_total }}</strong> modules.
+    </p>
+    <p class="ds-text-dark" style="margin-top: var(--ds-space-5); font-style: italic;">Issued on {{ eligibility.issued_on }}</p>
+</div>
+
+<div class="action-container">
+    <a href="{{ url_for('certificate.certificate_download') }}" class="ds-btn ds-btn-primary ds-btn-lg">Download PDF certificate</a>
+    <a href="{{ url_for('progress.progress') }}" class="ds-btn ds-btn-outline">Back to dashboard</a>
+</div>
+{% else %}
+<div class="ds-card" style="max-width: 720px; margin: 0 auto;">
+    <h2 class="ds-mt-0">You are not eligible yet</h2>
+    <p>The certificate becomes available once every requirement is satisfied:</p>
+    <ul style="line-height: 1.9;">
+        <li>Complete every module ({{ eligibility.modules_completed }}/{{ eligibility.modules_total }} so far).</li>
+        <li>Reach at least {{ eligibility.min_required_score }}% success on exercises (current score {{ eligibility.score }}%).</li>
+    </ul>
+    {% if eligibility.missing_modules %}
+    <div class="ds-alert ds-alert--warning" role="status" style="margin-top: var(--ds-space-4);">
+        <div class="ds-alert__icon" aria-hidden="true">i</div>
+        <div class="ds-alert__body">
+            <h3 class="ds-alert__title">Modules still to complete</h3>
+            <p class="ds-alert__message">{{ eligibility.missing_modules | join(', ') }}</p>
+        </div>
+    </div>
+    {% endif %}
+    <div class="action-container" style="margin-top: var(--ds-space-5);">
+        <a href="{{ url_for('main.learning_path') }}" class="ds-btn ds-btn-primary">Open learning path</a>
+        <a href="{{ url_for('exercise.exercise') }}" class="ds-btn ds-btn-mint">Practice more exercises</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
