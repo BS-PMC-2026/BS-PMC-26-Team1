@@ -1,34 +1,157 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="hero" style="text-align: center; padding: 4rem 2rem;">
-    <h1>Welcome to CI/CD Learning Platform</h1>
-    <p>Master Continuous Integration and Continuous Deployment in an interactive environment. Follow the guided learning path from theory to exercises and track your progress in real time.</p>
-    
-    <div style="margin-top: 3rem; display: flex; justify-content: center; gap: 2rem;">
-        <div class="card" style="text-align: center; width: 100%; max-width: 500px;">
-            <h2>Launch Your Journey</h2>
-            <p>Learn CI/CD concepts by completing an Intro module, exploring a visual pipeline, and solving interactive exercises with instant feedback.</p>
-            <br>
-            <a href="/start" class="btn btn-primary" id="start-learning-btn" style="background-color: #4f46e5; font-size: 1.25rem; padding: 1rem 2.5rem; border-radius: 8px;">Start Learning</a>
-            <div style="margin-top: 1rem;">
-                {% if is_authenticated %}
-                    <a href="/learning-path" style="color: var(--accent-color);">Continue from Learning Path</a>
-                {% else %}
-                    <a href="/register" style="color: var(--accent-color);">New student? Create account</a>
-                {% endif %}
-            </div>
-        </div>
+{# Hero: photo (with blue halo) on the left, headline + CTA on the right. #}
+<section class="ds-hero-split">
+    <div class="ds-hero-visual">
+        <span class="ds-blob ds-blob-purple ds-blob-sm" style="top: 0; left: 4%;" aria-hidden="true"></span>
+        <span class="ds-blob ds-blob-mint ds-blob-sm"   style="bottom: 12%; right: -2%;" aria-hidden="true"></span>
+        <img src="{{ url_for('static', filename='img/hero-learner.svg') }}"
+             alt="Illustrated learner with laptop"
+             class="ds-hero-image">
     </div>
 
-    <div class="card" style="text-align: left; max-width: 850px; margin: 2rem auto 0 auto;">
-        <h2 style="margin-top: 0;">How learning flows in this platform</h2>
-        <ol style="line-height: 1.9; color: var(--text-secondary);">
-            <li><strong style="color: var(--text-primary);">Intro Module</strong> — understand CI, CD, benefits, and practical software team workflows.</li>
-            <li><strong style="color: var(--text-primary);">Pipeline Visualization</strong> — click each stage to inspect what happens during delivery.</li>
-            <li><strong style="color: var(--text-primary);">Exercises</strong> — answer MCQ and coding questions and receive immediate explanations.</li>
-            <li><strong style="color: var(--text-primary);">Dashboard</strong> — review module completion, score, and remaining steps.</li>
-        </ol>
+    <div class="ds-hero-text ds-text-center">
+        <span class="ds-pill">✦ E-Learning Platform</span>
+        <h1 class="ds-hero-title">Welcome to CI/CD Learning Platform</h1>
+        <p class="ds-subtitle" style="max-width: 560px; margin-left: auto; margin-right: auto;">
+            Begin your journey to mastering DevOps in less time and build a strong foundation
+            through curated learning paths and practice.
+        </p>
+        <div class="ds-flex ds-justify-center ds-gap-3 ds-mt-6" style="flex-wrap: wrap;">
+            <a href="/start" id="start-learning-btn" class="ds-btn ds-btn-mint">
+                Get Started &nbsp;›
+            </a>
+            <a href="/learning-path" class="ds-btn ds-btn-outline">
+                ▶ &nbsp; How it works
+            </a>
+        </div>
+        <p class="ds-mt-4" style="margin-bottom:0;">
+            {% if is_authenticated %}
+                <a href="/learning-path" style="color: var(--ds-btn-purple); text-decoration: none; font-weight: var(--ds-weight-title);">
+                    Continue from Learning Path →
+                </a>
+            {% else %}
+                <a href="/register" style="color: var(--ds-btn-purple); text-decoration: none; font-weight: var(--ds-weight-title);">
+                    New student? Create account →
+                </a>
+            {% endif %}
+        </p>
     </div>
-</div>
+</section>
+
+{# Section heading + 3 feature cards #}
+<section style="margin-top: var(--ds-space-7);">
+    <div class="ds-text-center" style="margin-bottom: var(--ds-space-6);">
+        <h2>Learn with Interactive Guidance</h2>
+        <p class="ds-subtitle">Join the cohort mastering DevOps through hands-on practice.</p>
+    </div>
+
+    <div class="ds-features">
+        <article class="ds-feature-card">
+            <h3>Interactive Learning</h3>
+            <p>Master concepts through practice.</p>
+            <a href="/intro" class="ds-btn ds-btn-purple ds-btn-sm">Start Learning</a>
+        </article>
+        <article class="ds-feature-card">
+            <h3>Question #1</h3>
+            <p>Answer questions and earn points.</p>
+            <a href="/exercise" class="ds-btn ds-btn-primary ds-btn-sm">Answer Questions</a>
+        </article>
+        <article class="ds-feature-card">
+            <h3>Click to Learn</h3>
+            <p>Explore comprehensive tutorials.</p>
+            <a href="/pipeline" class="ds-btn ds-btn-mint ds-btn-sm">Explore Tutorials</a>
+        </article>
+    </div>
+</section>
+
+{# Secondary two-card row #}
+<section class="ds-row" style="margin-top: var(--ds-space-6);">
+    <article class="ds-feature-card" style="flex: 1; min-width: 280px; text-align: left; padding: var(--ds-space-5) var(--ds-space-6);">
+        <h3 class="ds-mt-0">Question #1</h3>
+        <p>Test your knowledge with interactive quizzes.</p>
+        <a href="/exercise" class="ds-btn ds-btn-primary ds-btn-sm">Start Quiz</a>
+    </article>
+    <article class="ds-feature-card" style="flex: 1; min-width: 280px; text-align: left; padding: var(--ds-space-5) var(--ds-space-6);">
+        <h3 class="ds-mt-0">Click to Learn</h3>
+        <p>Access comprehensive learning materials.</p>
+        <a href="/pipeline" class="ds-btn ds-btn-mint ds-btn-sm">Browse Courses</a>
+    </article>
+</section>
+
+{# Featured Path card with photo on the right #}
+<section class="ds-card" style="margin-top: var(--ds-space-7); padding: var(--ds-space-7); overflow: hidden;">
+    <div style="display: grid; grid-template-columns: 1fr auto; gap: var(--ds-space-6); align-items: center;">
+        <div style="min-width: 0;">
+            <div class="ds-flex ds-gap-2 ds-mb-4" style="flex-wrap: wrap;">
+                <span class="ds-pill ds-pill-dark">Featured Path</span>
+                <span class="ds-pill ds-pill-mint">Beginner Friendly</span>
+            </div>
+            <h2 class="ds-mt-0">From Beginner to Expert in 12 Weeks</h2>
+            <p class="ds-subtitle">
+                A comprehensive learning path that takes you through everything you need to know about
+                DevOps, from basic concepts to advanced implementation strategies. Each module builds on
+                the previous one, ensuring a solid foundation at every step.
+            </p>
+            <ul class="ds-flex-col ds-gap-3" style="list-style: none; padding: 0; margin: var(--ds-space-5) 0 0;">
+                <li class="ds-flex ds-items-center ds-gap-3">
+                    <span class="ds-floating-chip" style="position:static; width:40px; height:40px; font-size:18px;">📖</span>
+                    <span>12 comprehensive modules covering all essential topics</span>
+                </li>
+                <li class="ds-flex ds-items-center ds-gap-3">
+                    <span class="ds-floating-chip" style="position:static; width:40px; height:40px; font-size:18px;">🎯</span>
+                    <span>40+ hands-on exercises and real-world projects</span>
+                </li>
+                <li class="ds-flex ds-items-center ds-gap-3">
+                    <span class="ds-floating-chip" style="position:static; width:40px; height:40px; font-size:18px;">👥</span>
+                    <span>Expert guidance and community support throughout</span>
+                </li>
+                <li class="ds-flex ds-items-center ds-gap-3">
+                    <span class="ds-floating-chip" style="position:static; width:40px; height:40px; font-size:18px;">🏆</span>
+                    <span>Certificate of completion upon finishing the program</span>
+                </li>
+            </ul>
+        </div>
+        <div class="ds-photo-card" style="flex-shrink: 0;">
+            <span class="ds-photo-card__halo ds-photo-card__halo--purple" aria-hidden="true"></span>
+            <img src="{{ url_for('static', filename='img/student-3.svg') }}" alt="" class="ds-photo-card__img" style="width: 220px; height: 280px;">
+        </div>
+    </div>
+</section>
+
+{# Learning flow: four steps 1→4 (Issue 4 reinforcement) #}
+<section class="ds-card" style="margin-top: var(--ds-space-7);">
+    <div class="ds-text-center" style="margin-bottom: var(--ds-space-5);">
+        <span class="ds-pill">Learning Flow</span>
+        <h2 class="ds-mt-2">How learning flows in this platform</h2>
+        <p class="ds-subtitle">A guided four-step journey from theory to practice.</p>
+    </div>
+
+    <div class="ds-pipeline">
+        <div class="ds-pipeline-stage">
+            <div class="ds-pipeline-step-num">1</div>
+            <h3 class="ds-mt-0">Intro Module</h3>
+            <p class="ds-text-muted" style="margin-bottom:0;">Understand CI, CD, benefits, and practical workflows.</p>
+        </div>
+        <div class="ds-pipeline-arrow" aria-hidden="true">→</div>
+        <div class="ds-pipeline-stage">
+            <div class="ds-pipeline-step-num" style="background: var(--ds-btn-orange);">2</div>
+            <h3 class="ds-mt-0">Pipeline Visualization</h3>
+            <p class="ds-text-muted" style="margin-bottom:0;">Click each stage to inspect what happens during delivery.</p>
+        </div>
+        <div class="ds-pipeline-arrow" aria-hidden="true">→</div>
+        <div class="ds-pipeline-stage">
+            <div class="ds-pipeline-step-num" style="background: var(--ds-state-success);">3</div>
+            <h3 class="ds-mt-0">Exercises</h3>
+            <p class="ds-text-muted" style="margin-bottom:0;">Answer MCQ and coding questions with immediate explanations.</p>
+        </div>
+        <div class="ds-pipeline-arrow" aria-hidden="true">→</div>
+        <div class="ds-pipeline-stage">
+            <div class="ds-pipeline-step-num" style="background: var(--ds-btn-purple-strong);">4</div>
+            <h3 class="ds-mt-0">Dashboard</h3>
+            <p class="ds-text-muted" style="margin-bottom:0;">Review module completion, score and remaining steps.</p>
+        </div>
+    </div>
+</section>
 {% endblock %}
