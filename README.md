@@ -1,4 +1,4 @@
-# 🚀 ANTE — CI/CD Academic Learning Platform
+# 🚀 CI/CD Academic Learning Platform
 
 An interactive platform for teaching **CI/CD & DevOps** to students — built with Flask, featuring a secure Python sandbox, an embedded VS Code editor, and role-based panels for students, lecturers, and admins.
 
