@@ -18,7 +18,6 @@ env:
   DATABASE_URL: "sqlite:///:memory:"
   SECRET_KEY: "github-actions-test-secret"
 
-  # Azure resources created for Sprint 3 deployment-readiness evidence
   AZURE_WEBAPP_NAME: "s-y-i-b-team-test-app-sce"
   AZURE_RESOURCE_GROUP: "bs-pm-2026-team1"
   AZURE_SQL_SERVER_NAME: "azure-s-y-i-b-team1-sql-server"
@@ -58,7 +57,7 @@ jobs:
           echo "Azure SQL Server: $AZURE_SQL_SERVER_NAME"
           echo "Azure SQL Database: $AZURE_SQL_DATABASE_NAME"
 
-      - name: Clean local development files from runner
+      - name: Clean runner cache folders
         run: |
           rm -rf .venv venv env __pycache__ .pytest_cache htmlcov
           find . -type d -name "__pycache__" -prune -exec rm -rf {} +
@@ -76,29 +75,13 @@ jobs:
           fi
           python -m pip install pytest pytest-cov flake8
 
-       - name: Lint critical Python errors only
+      - name: Lint critical Python errors only
         run: |
-          python -m flake8 . \
-            --exclude=.git,.venv,venv,env,__pycache__,.pytest_cache,htmlcov \
-            --count \
-            --select=E9,F63,F7,F82 \
-            --show-source \
-            --statistics
+          python -m flake8 . --exclude=.git,.venv,venv,env,__pycache__,.pytest_cache,htmlcov --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Check Python syntax
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import py_compile
-
-          excluded = {".git", ".venv", "venv", "env", "__pycache__", ".pytest_cache", "htmlcov"}
-          files = [p for p in Path(".").rglob("*.py") if not any(part in excluded for part in p.parts)]
-
-          for file_path in files:
-              py_compile.compile(str(file_path), doraise=True)
-
-          print(f"Compiled {len(files)} Python files successfully")
-          PY
+          python -m compileall -q .
 
       - name: Validate Flask application boots
         run: |
@@ -108,13 +91,7 @@ jobs:
       - name: Run tests and coverage
         run: |
           export PYTHONPATH="$PWD"
-          python -m pytest tests \
-            -v \
-            --junitxml=pytest_junit_report.xml \
-            --cov=app \
-            --cov-report=term-missing \
-            --cov-report=xml:coverage.xml \
-            --cov-report=html:htmlcov
+          python -m pytest tests -v --junitxml=pytest_junit_report.xml --cov=app --cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:htmlcov
 
       - name: Upload test and coverage artifacts
         if: always()
@@ -145,7 +122,6 @@ jobs:
           echo "SQL Server: $AZURE_SQL_SERVER_NAME"
           echo "SQL Database: $AZURE_SQL_DATABASE_NAME"
           echo ""
-          echo "This workflow validates code, tests, coverage, and Azure readiness."
           echo "Real Azure checks run only when AZURE_CREDENTIALS secret exists."
 
       - name: Azure login
@@ -158,25 +134,16 @@ jobs:
         if: env.AZURE_CREDENTIALS != ''
         continue-on-error: true
         run: |
-          az webapp show \
-            --name "$AZURE_WEBAPP_NAME" \
-            --resource-group "$AZURE_RESOURCE_GROUP" \
-            --query "{name:name,state:state,availabilityState:availabilityState,defaultHostName:defaultHostName,resourceGroup:resourceGroup}" \
-            --output table
+          az webapp show --name "$AZURE_WEBAPP_NAME" --resource-group "$AZURE_RESOURCE_GROUP" --query "{name:name,state:state,availabilityState:availabilityState,defaultHostName:defaultHostName}" --output table
 
       - name: Check Azure SQL Database status
         if: env.AZURE_CREDENTIALS != ''
         continue-on-error: true
         run: |
-          az sql db show \
-            --server "$AZURE_SQL_SERVER_NAME" \
-            --resource-group "$AZURE_RESOURCE_GROUP" \
-            --name "$AZURE_SQL_DATABASE_NAME" \
-            --query "{name:name,status:status,edition:edition,serviceObjectiveName:serviceObjectiveName}" \
-            --output table
+          az sql db show --server "$AZURE_SQL_SERVER_NAME" --resource-group "$AZURE_RESOURCE_GROUP" --name "$AZURE_SQL_DATABASE_NAME" --query "{name:name,status:status,edition:edition,serviceObjectiveName:serviceObjectiveName}" --output table
 
       - name: Skip Azure checks when secret is missing
         if: env.AZURE_CREDENTIALS == ''
         run: |
-          echo "AZURE_CREDENTIALS secret is not configured, so real Azure CLI checks were skipped."
-          echo "CI is still green because Azure readiness is documented as an optional validation step."
+          echo "AZURE_CREDENTIALS secret is not configured."
+          echo "Azure readiness job completed as optional documentation check."
