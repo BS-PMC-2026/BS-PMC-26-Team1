@@ -1,6 +1,6 @@
 # 🚀 CI/CD Academic Learning Platform
 
-An interactive platform for teaching **CI/CD & DevOps** to students — built with Flask, featuring a secure Python sandbox, an embedded VS Code editor, and role-based panels for students, lecturers, and admins.
+An interactive platform for teaching **CI/CD & DevOps** to students — built with Flask, featuring a secure Python sandbox, an embedded VS Code editor, and role-based panels for students, lecturers, and admins .
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
