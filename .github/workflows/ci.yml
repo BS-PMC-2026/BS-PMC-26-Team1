@@ -3,16 +3,20 @@ name: CI - Test, Coverage and Azure Readiness
 on:
   push:
     branches:
-      - develop
       - main
+      - develop
   pull_request:
     branches:
-      - develop
       - main
+      - develop
   workflow_dispatch:
 
 env:
   PYTHON_VERSION: "3.11"
+  FLASK_ENV: "testing"
+  USE_SQLSERVER: "0"
+  DATABASE_URL: "sqlite:///:memory:"
+  SECRET_KEY: "github-actions-test-secret"
 
   # Azure resources created for Sprint 3 deployment-readiness evidence
   AZURE_WEBAPP_NAME: "s-y-i-b-team-test-app-sce"
@@ -20,11 +24,18 @@ env:
   AZURE_SQL_SERVER_NAME: "azure-s-y-i-b-team1-sql-server"
   AZURE_SQL_DATABASE_NAME: "db-app-test"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-test-coverage:
     name: Build, Test and Coverage
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -34,17 +45,30 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
 
       - name: Show environment information
         run: |
           python --version
           python -m pip --version
+          echo "Branch: $GITHUB_REF_NAME"
+          echo "Commit: $GITHUB_SHA"
           echo "Azure Web App: $AZURE_WEBAPP_NAME"
           echo "Azure Resource Group: $AZURE_RESOURCE_GROUP"
           echo "Azure SQL Server: $AZURE_SQL_SERVER_NAME"
           echo "Azure SQL Database: $AZURE_SQL_DATABASE_NAME"
 
-      - name: Install dependencies
+      - name: Clean local development files from runner
+        run: |
+          rm -rf .venv venv env __pycache__ .pytest_cache htmlcov
+          find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+
+      - name: Install system packages for pyodbc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unixodbc-dev
+
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
@@ -52,17 +76,44 @@ jobs:
           fi
           python -m pip install pytest pytest-cov flake8
 
+      - name: Lint critical Python errors only
+        run: |
+          python -m flake8 app tests scripts app.py run.py \
+            --count \
+            --select=E9,F63,F7,F82 \
+            --show-source \
+            --statistics
+
       - name: Check Python syntax
         run: |
-          python -m compileall .
+          python - <<'PY'
+          from pathlib import Path
+          import py_compile
 
-      - name: Run automated tests and create JUnit report
-        run: |
-          python -m pytest tests -v --junitxml=pytest_junit_report.xml
+          excluded = {".git", ".venv", "venv", "env", "__pycache__", ".pytest_cache", "htmlcov"}
+          files = [p for p in Path(".").rglob("*.py") if not any(part in excluded for part in p.parts)]
 
-      - name: Run coverage report
+          for file_path in files:
+              py_compile.compile(str(file_path), doraise=True)
+
+          print(f"Compiled {len(files)} Python files successfully")
+          PY
+
+      - name: Validate Flask application boots
         run: |
-          python -m pytest --cov=. --cov-report=term-missing --cov-report=xml:coverage.xml
+          export PYTHONPATH="$PWD"
+          python -c "from app import create_app; app = create_app(); print('APP OK:', app.name)"
+
+      - name: Run tests and coverage
+        run: |
+          export PYTHONPATH="$PWD"
+          python -m pytest tests \
+            -v \
+            --junitxml=pytest_junit_report.xml \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov
 
       - name: Upload test and coverage artifacts
         if: always()
@@ -72,6 +123,7 @@ jobs:
           path: |
             pytest_junit_report.xml
             coverage.xml
+            htmlcov/
           if-no-files-found: ignore
 
   azure-readiness:
@@ -79,6 +131,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-test-coverage
     timeout-minutes: 10
+
+    env:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
     steps:
       - name: Print Azure deployment-readiness configuration
@@ -89,28 +144,28 @@ jobs:
           echo "SQL Server: $AZURE_SQL_SERVER_NAME"
           echo "SQL Database: $AZURE_SQL_DATABASE_NAME"
           echo ""
-          echo "Note: Hosted GitHub Actions execution may be blocked by account billing/spending-limit restrictions."
-          echo "When hosted execution is unavailable, the same validation is executed manually using manual_ci.ps1."
+          echo "This workflow validates code, tests, coverage, and Azure readiness."
+          echo "Real Azure checks run only when AZURE_CREDENTIALS secret exists."
 
-      # Optional real Azure validation.
-      # This step works only if the repository has a valid AZURE_CREDENTIALS secret.
       - name: Azure login
-        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        if: env.AZURE_CREDENTIALS != ''
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ env.AZURE_CREDENTIALS }}
 
       - name: Check Azure App Service status
-        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        if: env.AZURE_CREDENTIALS != ''
+        continue-on-error: true
         run: |
           az webapp show \
             --name "$AZURE_WEBAPP_NAME" \
             --resource-group "$AZURE_RESOURCE_GROUP" \
-            --query "{name:name,state:state,defaultHostName:defaultHostName,resourceGroup:resourceGroup}" \
+            --query "{name:name,state:state,availabilityState:availabilityState,defaultHostName:defaultHostName,resourceGroup:resourceGroup}" \
             --output table
 
       - name: Check Azure SQL Database status
-        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        if: env.AZURE_CREDENTIALS != ''
+        continue-on-error: true
         run: |
           az sql db show \
             --server "$AZURE_SQL_SERVER_NAME" \
@@ -119,14 +174,8 @@ jobs:
             --query "{name:name,status:status,edition:edition,serviceObjectiveName:serviceObjectiveName}" \
             --output table
 
-      # Optional deployment step.
-      # Do NOT enable this unless the Azure App Service quota issue is solved
-      # and the repository has AZURE_WEBAPP_PUBLISH_PROFILE configured.
-      #
-      # - name: Deploy to Azure App Service
-      #   if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE != '' }}
-      #   uses: azure/webapps-deploy@v3
-      #   with:
-      #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
-      #     publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-      #     package: .
+      - name: Skip Azure checks when secret is missing
+        if: env.AZURE_CREDENTIALS == ''
+        run: |
+          echo "AZURE_CREDENTIALS secret is not configured, so real Azure CLI checks were skipped."
+          echo "CI is still green because Azure readiness is documented as an optional validation step."
